@@ -18,6 +18,7 @@ import (
 // If you add non-reference types to your configuration struct, be sure to rewrite Clone as a deep
 // copy appropriate for your types.
 type Configuration struct {
+	EnableUI                bool
 	GitHubOrg               string
 	GitHubOAuthClientID     string
 	GitHubOAuthClientSecret string

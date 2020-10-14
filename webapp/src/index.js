@@ -11,7 +11,7 @@ import UserAttribute from './components/user_attribute';
 import SidebarRight from './components/sidebar_right';
 import LinkTooltip from './components/link_tooltip';
 import Reducer from './reducers';
-import {getConnected, setShowRHSAction} from './actions';
+import {getConnected, setShowRHSAction, getSettings} from './actions';
 import {handleConnect, handleDisconnect, handleReconnect, handleRefresh} from './websocket';
 
 let activityFunc;
@@ -22,23 +22,26 @@ class PluginClass {
     async initialize(registry, store) {
         registry.registerReducer(Reducer);
 
+        const {data: settings} = await getSettings(store.getState);
+
         await getConnected(true)(store.dispatch, store.getState);
 
-        registry.registerLeftSidebarHeaderComponent(SidebarHeader);
-        registry.registerBottomTeamSidebarComponent(TeamSidebar);
-        registry.registerPopoverUserAttributesComponent(UserAttribute);
-        registry.registerRootComponent(CreateIssueModal);
-        registry.registerPostDropdownMenuComponent(CreateIssuePostMenuAction);
-        registry.registerRootComponent(AttachCommentToIssueModal);
-        registry.registerPostDropdownMenuComponent(AttachCommentToIssuePostMenuAction);
-        registry.registerLinkTooltipComponent(LinkTooltip);
+        if (settings && settings.ui_enabled) {
+            registry.registerLeftSidebarHeaderComponent(SidebarHeader);
+            registry.registerBottomTeamSidebarComponent(TeamSidebar);
+            registry.registerPopoverUserAttributesComponent(UserAttribute);
+            registry.registerRootComponent(CreateIssueModal);
+            registry.registerPostDropdownMenuComponent(CreateIssuePostMenuAction);
+            registry.registerRootComponent(AttachCommentToIssueModal);
+            registry.registerPostDropdownMenuComponent(AttachCommentToIssuePostMenuAction);
+            registry.registerLinkTooltipComponent(LinkTooltip);
+            const {showRHSPlugin} = registry.registerRightHandSidebarComponent(SidebarRight, 'GitHub');
+            store.dispatch(setShowRHSAction(() => store.dispatch(showRHSPlugin)));
 
-        const {showRHSPlugin} = registry.registerRightHandSidebarComponent(SidebarRight, 'GitHub');
-        store.dispatch(setShowRHSAction(() => store.dispatch(showRHSPlugin)));
-
-        registry.registerWebSocketEventHandler('custom_github_connect', handleConnect(store));
-        registry.registerWebSocketEventHandler('custom_github_disconnect', handleDisconnect(store));
-        registry.registerWebSocketEventHandler('custom_github_refresh', handleRefresh(store));
+            registry.registerWebSocketEventHandler('custom_github_connect', handleConnect(store));
+            registry.registerWebSocketEventHandler('custom_github_disconnect', handleDisconnect(store));
+            registry.registerWebSocketEventHandler('custom_github_refresh', handleRefresh(store));
+        }
         registry.registerReconnectHandler(handleReconnect(store));
 
         activityFunc = () => {

@@ -108,6 +108,7 @@ func (p *Plugin) initializeAPI() {
 	oauthRouter.HandleFunc("/connect", p.extractUserMiddleWare(p.connectUserToGitHub, ResponseTypePlain)).Methods(http.MethodGet)
 	oauthRouter.HandleFunc("/complete", p.extractUserMiddleWare(p.completeConnectUserToGitHub, ResponseTypePlain)).Methods(http.MethodGet)
 
+	apiRouter.HandleFunc("/settingsinfo", p.getSettingsInfo).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/connected", p.getConnected).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/todo", p.extractUserMiddleWare(p.postToDo, ResponseTypeJSON)).Methods(http.MethodPost)
 	apiRouter.HandleFunc("/reviews", p.extractUserMiddleWare(p.getReviews, ResponseTypePlain)).Methods(http.MethodGet)
@@ -191,6 +192,16 @@ func (p *Plugin) ServeHTTP(c *plugin.Context, w http.ResponseWriter, r *http.Req
 	w.Header().Set("Content-Type", "application/json")
 
 	p.router.ServeHTTP(w, r)
+}
+
+func (p *Plugin)  getSettingsInfo(w http.ResponseWriter, _ *http.Request) {
+    resp := struct {
+		UIEnabled bool `json:"ui_enabled"`
+	}{
+		UIEnabled: p.getConfiguration().EnableUI,
+	}
+
+	p.writeJSON(w, resp)
 }
 
 func (p *Plugin) connectUserToGitHub(w http.ResponseWriter, r *http.Request, userID string) {

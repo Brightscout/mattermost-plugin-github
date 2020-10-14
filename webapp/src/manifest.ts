@@ -27,6 +27,14 @@ const manifest = JSON.parse(`
         "footer": "* To report an issue, make a suggestion or a contribution, [check the repository](https://github.com/mattermost/mattermost-plugin-github).",
         "settings": [
             {
+                "key": "EnableUI",
+                "display_name": "Enable UI",
+                "type": "bool",
+                "help_text": "",
+                "placeholder": "",
+                "default": true
+            },
+            {
                 "key": "GitHubOAuthClientID",
                 "display_name": "GitHub OAuth Client ID",
                 "type": "text",
