@@ -11,3 +11,8 @@ export const RHSStates = {
     UNREADS: 'unreads',
     ASSIGNMENTS: 'assignments',
 };
+
+export const JitterForReconnectAPICall = {
+    MAXTIME: 1,
+    MINTIME: 10,
+};

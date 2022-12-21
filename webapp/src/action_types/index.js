@@ -23,4 +23,5 @@ export default {
     CLOSE_ATTACH_COMMENT_TO_ISSUE_MODAL: pluginId + '_close_attach_modal',
     OPEN_ATTACH_COMMENT_TO_ISSUE_MODAL: pluginId + '_open_attach_modal',
     RECEIVED_ATTACH_COMMENT_RESULT: pluginId + '_received_attach_comment',
+    RECEIVED_SIDEBAR_CONTENT: pluginId + '_received_sidebar_content',
 };

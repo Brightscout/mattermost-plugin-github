@@ -104,6 +104,15 @@ function yourPrs(state = [], action) {
     }
 }
 
+function sidebarContent(state = [], action) {
+    switch (action.type) {
+    case ActionTypes.RECEIVED_SIDEBAR_CONTENT:
+        return action.data;
+    default:
+        return state;
+    }
+}
+
 function yourRepos(state = [], action) {
     switch (action.type) {
     case ActionTypes.RECEIVED_REPOSITORIES:
@@ -253,4 +262,5 @@ export default combineReducers({
     createIssueModal,
     attachCommentToIssueModalVisible,
     attachCommentToIssueModalForPostId,
+    sidebarContent,
 });

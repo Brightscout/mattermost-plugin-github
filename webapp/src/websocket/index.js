@@ -2,13 +2,10 @@
 // See LICENSE.txt for license information.
 
 import ActionTypes from '../action_types';
-import Constants from '../constants';
+import Constants, {JitterForReconnectAPICall} from '../constants';
 import {
     getConnected,
-    getReviews,
-    getUnreads,
-    getYourAssignments,
-    getYourPrs,
+    getSidebarContent,
     openCreateIssueModalWithoutPost,
 } from '../actions';
 
@@ -66,21 +63,23 @@ export function handleReconnect(store, reminder = false) {
     return async () => {
         const {data} = await getConnected(reminder)(store.dispatch, store.getState);
         if (data && data.connected) {
-            getReviews()(store.dispatch, store.getState);
-            getUnreads()(store.dispatch, store.getState);
-            getYourPrs()(store.dispatch, store.getState);
-            getYourAssignments()(store.dispatch, store.getState);
+            const rand = Math.floor(Math.random() * (JitterForReconnectAPICall.MAXTIME - JitterForReconnectAPICall.MINTIME + 1)) + JitterForReconnectAPICall.MINTIME; //eslint-disable-line no-mixed-operators
+            setTimeout(() => {
+                getSidebarContent()(store.dispatch, store.getState);
+            }, rand);
         }
     };
 }
 
 export function handleRefresh(store) {
-    return () => {
+    return (msg) => {
         if (store.getState()[`plugins-${pluginId}`].connected) {
-            getReviews()(store.dispatch, store.getState);
-            getUnreads()(store.dispatch, store.getState);
-            getYourPrs()(store.dispatch, store.getState);
-            getYourAssignments()(store.dispatch, store.getState);
+            const {data} = msg;
+
+            store.dispatch({
+                type: ActionTypes.RECEIVED_SIDEBAR_CONTENT,
+                data,
+            });
         }
     };
 }
