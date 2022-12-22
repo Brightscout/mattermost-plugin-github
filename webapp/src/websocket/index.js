@@ -63,7 +63,7 @@ export function handleReconnect(store, reminder = false) {
     return async () => {
         const {data} = await getConnected(reminder)(store.dispatch, store.getState);
         if (data && data.connected) {
-            const rand = Math.floor(Math.random() * (JitterForReconnectAPICall.MAXTIME - JitterForReconnectAPICall.MINTIME + 1)) + JitterForReconnectAPICall.MINTIME; //eslint-disable-line no-mixed-operators
+            const rand = Math.floor(Math.random() * (JitterForReconnectAPICall.MAX_TIME - JitterForReconnectAPICall.MIN_TIME + 1)) + JitterForReconnectAPICall.MIN_TIME; //eslint-disable-line no-mixed-operators
             setTimeout(() => {
                 getSidebarContent()(store.dispatch, store.getState);
             }, rand);

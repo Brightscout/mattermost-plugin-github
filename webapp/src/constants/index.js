@@ -13,6 +13,6 @@ export const RHSStates = {
 };
 
 export const JitterForReconnectAPICall = {
-    MAXTIME: 1,
-    MINTIME: 10,
+    MAX_TIME: 1,
+    MIN_TIME: 10,
 };

@@ -58,7 +58,6 @@ type PRDetails struct {
 
 type FilteredNotification struct {
 	github.Notification
-
 	HTMLUrl string `json:"html_url"`
 }
 

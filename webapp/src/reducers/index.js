@@ -77,27 +77,9 @@ function clientId(state = '', action) {
     }
 }
 
-function reviews(state = [], action) {
-    switch (action.type) {
-    case ActionTypes.RECEIVED_REVIEWS:
-        return action.data;
-    default:
-        return state;
-    }
-}
-
 function reviewsDetails(state = [], action) {
     switch (action.type) {
     case ActionTypes.RECEIVED_REVIEWS_DETAILS:
-        return action.data;
-    default:
-        return state;
-    }
-}
-
-function yourPrs(state = [], action) {
-    switch (action.type) {
-    case ActionTypes.RECEIVED_YOUR_PRS:
         return action.data;
     default:
         return state;
@@ -131,27 +113,9 @@ function yourPrsDetails(state = [], action) {
     }
 }
 
-function yourAssignments(state = [], action) {
-    switch (action.type) {
-    case ActionTypes.RECEIVED_YOUR_ASSIGNMENTS:
-        return action.data;
-    default:
-        return state;
-    }
-}
-
 function mentions(state = [], action) {
     switch (action.type) {
     case ActionTypes.RECEIVED_MENTIONS:
-        return action.data;
-    default:
-        return state;
-    }
-}
-
-function unreads(state = [], action) {
-    switch (action.type) {
-    case ActionTypes.RECEIVED_UNREADS:
         return action.data;
     default:
         return state;
@@ -247,14 +211,10 @@ export default combineReducers({
     userSettings,
     configuration,
     clientId,
-    reviews,
     reviewsDetails,
-    yourPrs,
     yourRepos,
     yourPrsDetails,
-    yourAssignments,
     mentions,
-    unreads,
     githubUsers,
     rhsPluginAction,
     rhsState,
