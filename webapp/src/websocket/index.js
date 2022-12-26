@@ -9,7 +9,9 @@ import {
     getUnreads,
     getYourAssignments,
     getYourPrs,
-    openCreateIssueModalWithoutPost,
+    openCreateOrUpdateIssueModal,
+    openCloseOrReopenIssueModal,
+    openAttachCommentToIssueModal,
 } from '../actions';
 
 import {id as pluginId} from '../manifest';
@@ -85,11 +87,29 @@ export function handleRefresh(store) {
     };
 }
 
-export function handleOpenCreateIssueModal(store) {
+export function handleOpenCreateOrUpdateIssueModal(store) {
     return (msg) => {
         if (!msg.data) {
             return;
         }
-        store.dispatch(openCreateIssueModalWithoutPost(msg.data.title, msg.data.channel_id));
+        store.dispatch(openCreateOrUpdateIssueModal(msg.data.title, msg.data.milestone_title, msg.data.milestone_number, msg.data.issue_number, msg.data.labels, msg.data.assignees, msg.data.description,msg.data.repo_full_name, msg.data.channel_id,msg.data.postId));
+    };
+}
+
+export function handleOpenCloseOrReopenIssueModal(store) {
+    return (msg) => {
+        if (!msg.data) {
+            return;
+        }
+        store.dispatch(openCloseOrReopenIssueModal(msg.data.channel_id,msg.data.owner,msg.data.repo,msg.data.number,msg.data.status, msg.data.postId));
+    };
+}
+
+export function handleOpenAttachCommentIssueModal(store) {
+    return (msg) => {
+        if (!msg.data) {
+            return;
+        }
+        store.dispatch(openAttachCommentToIssueModal(msg.data.postId,msg.data.owner,msg.data.repo,msg.data.number));
     };
 }

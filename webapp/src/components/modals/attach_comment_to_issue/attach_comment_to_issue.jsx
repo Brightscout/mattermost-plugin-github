@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {Modal} from 'react-bootstrap';
+import {FormText, Modal} from 'react-bootstrap';
 
 import FormButton from 'components/form_button';
 import Input from 'components/input';
@@ -12,6 +12,7 @@ import GithubIssueSelector from 'components/github_issue_selector';
 import {getErrorMessage} from 'utils/user_utils';
 
 const initialState = {
+    comment: '',
     submitting: false,
     issueValue: null,
     textSearchTerms: '',
@@ -38,6 +39,24 @@ export default class AttachIssueModal extends PureComponent {
         }
 
         if (!this.state.issueValue) {
+            const issue = {
+                owner: this.props.owner,
+                repo: this.props.repo,
+                number:this.props.number,
+                comment: this.state.comment,
+                post_id: this.props.post.id,
+                show_attached_message:false,
+            };
+            this.setState({submitting: true});
+
+            this.props.create(issue).then((created) => {
+                if (created.error) {
+                    const errMessage = getErrorMessage(created.error.message);
+                    this.setState({error: errMessage, submitting: false});
+                    return;
+                }
+                this.handleClose(e);
+            });
             return;
         }
 
@@ -53,6 +72,7 @@ export default class AttachIssueModal extends PureComponent {
             number,
             comment: this.props.post.message,
             post_id: this.props.post.id,
+            show_attached_message:true,
         };
 
         this.setState({submitting: true});
@@ -67,6 +87,8 @@ export default class AttachIssueModal extends PureComponent {
             this.handleClose(e);
         });
     };
+
+    handleIssueCommentChange = (comment) => this.setState({comment});
 
     handleClose = (e) => {
         if (e && e.preventDefault) {
@@ -86,12 +108,13 @@ export default class AttachIssueModal extends PureComponent {
         const {visible, theme} = this.props;
         const {error, submitting} = this.state;
         const style = getStyle(theme);
+        const modalTitle = this.props.number?'Create a comment to GitHub Issue':'Attach Message to GitHub Issue';
 
         if (!visible) {
             return null;
         }
 
-        const component = (
+        let component = (
             <div>
                 <GithubIssueSelector
                     id={'issue'}
@@ -111,6 +134,19 @@ export default class AttachIssueModal extends PureComponent {
                 />
             </div>
         );
+        if(this.props.number){
+            component = (
+                <div>
+                    <Input
+                        label='Create a comment'
+                        type='textarea'
+                        onChange={this.handleIssueCommentChange}
+                        value = {this.state.comment}
+                    />
+
+                </div>
+            );
+        }
 
         return (
             <Modal
@@ -123,7 +159,7 @@ export default class AttachIssueModal extends PureComponent {
             >
                 <Modal.Header closeButton={true}>
                     <Modal.Title>
-                        {'Attach Message to GitHub Issue'}
+                        {modalTitle}
                     </Modal.Title>
                 </Modal.Header>
                 <form

@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/go-github/v41/github"
+	"github.com/google/go-github/v48/github"
 	"github.com/mattermost/mattermost-server/v6/model"
 	"github.com/microcosm-cc/bluemonday"
 )
@@ -549,10 +549,33 @@ func (p *Plugin) postIssueEvent(event *github.IssuesEvent) {
 		}
 		renderedMessage = p.sanitizeDescription(renderedMessage)
 
+		assignees := make([]string, len(issue.Assignees))
+		for i, v := range issue.Assignees {
+			assignees[i] = v.GetLogin()
+		}
+		description := ""
+		if issue.Body != nil {
+			description = *issue.Body
+		}
+
 		post := &model.Post{
 			UserId:  p.BotUserID,
-			Type:    "custom_git_issue",
 			Message: renderedMessage,
+		}
+
+		if action == actionOpened {
+			post.Type = "custom_git_issue"
+			post.Props = map[string]interface{}{
+				"title":        *issue.Title,
+				"issue_url":    *issue.HTMLURL,
+				"issue_number": *issue.Number,
+				"description":  description,
+				"assignees":    assignees,
+				"labels":       labels,
+				"repo_owner":   *repo.Owner.Login,
+				"repo_name":    *repo.Name,
+				"status":       "Close",
+			}
 		}
 
 		label := sub.Label()

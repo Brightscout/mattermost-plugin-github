@@ -12,7 +12,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/google/go-github/v41/github"
+	"github.com/google/go-github/v48/github"
 	"github.com/gorilla/mux"
 	pluginapi "github.com/mattermost/mattermost-plugin-api"
 	"github.com/mattermost/mattermost-plugin-api/experimental/bot/poster"
@@ -37,9 +37,11 @@ const (
 	wsEventConnect    = "connect"
 	wsEventDisconnect = "disconnect"
 	// WSEventConfigUpdate is the WebSocket event to update the configurations on webapp.
-	WSEventConfigUpdate = "config_update"
-	wsEventRefresh      = "refresh"
-	wsEventCreateIssue  = "createIssue"
+	WSEventConfigUpdate         = "config_update"
+	wsEventRefresh              = "refresh"
+	wsEventCreateOrUpdateIssue  = "createOrUpdateIssue"
+	wsEventCloseOrReopenIssue   = "closeOrReopenIssue"
+	wsEventAttachCommentToIssue = "attachCommentToIssue"
 
 	WSEventRefresh = "refresh"
 
@@ -496,7 +498,7 @@ func (p *Plugin) disconnectGitHubAccount(userID string) {
 
 func (p *Plugin) openIssueCreateModal(userID string, channelID string, title string) {
 	p.API.PublishWebSocketEvent(
-		wsEventCreateIssue,
+		wsEventCreateOrUpdateIssue,
 		map[string]interface{}{
 			"title":      title,
 			"channel_id": channelID,

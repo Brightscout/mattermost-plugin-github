@@ -211,6 +211,60 @@ export function getMilestoneOptions(repo) {
     };
 }
 
+export function attachCommentIssueModal(owner,repo,issueNumber,postId) {
+    return async (dispatch, getState) => {
+        let data;
+        try {
+            data = await Client.attachCommentIssueModal(owner,repo,issueNumber,postId);
+        } catch (error) {
+            return {error};
+        }
+
+        const connected = await checkAndHandleNotConnected(data)(dispatch, getState);
+        if (!connected) {
+            return {error: data};
+        }
+
+        return {data};
+    };
+}
+
+export function editIssueModal(owner,repo,issueNumber,postId) {
+    return async (dispatch, getState) => {
+        let data;
+        try {
+            data = await Client.editIssueModal(owner,repo,issueNumber,postId);
+        } catch (error) {
+            return {error};
+        }
+
+        const connected = await checkAndHandleNotConnected(data)(dispatch, getState);
+        if (!connected) {
+            return {error: data};
+        }
+
+        return {data};
+    };
+}
+
+export function closeOrReopenIssueModal(owner,repo,issueNumber,status,postId) {
+    return async (dispatch, getState) => {
+        let data;
+        try {
+            data = await Client.closeOrReopenIssueModal(owner,repo,issueNumber,status,postId);
+        } catch (error) {
+            return {error};
+        }
+
+        const connected = await checkAndHandleNotConnected(data)(dispatch, getState);
+        if (!connected) {
+            return {error: data};
+        }
+
+        return {data};
+    };
+}
+
 export function getYourAssignments() {
     return async (dispatch, getState) => {
         let data;
@@ -339,28 +393,56 @@ export function updateRhsState(rhsState) {
     };
 }
 
-export function openCreateIssueModal(postId) {
+export function openCreateIssueModalWithPost(postId) {
     return {
-        type: ActionTypes.OPEN_CREATE_ISSUE_MODAL,
+        type: ActionTypes.OPEN_CREATE_ISSUE_MODAL_WITH_POST,
         data: {
             postId,
         },
     };
 }
 
-export function openCreateIssueModalWithoutPost(title, channelId) {
+export function openCreateOrUpdateIssueModal(title, milestoneTitle, milestoneNumber, issueNumber, labels, assignees, description, repoName, channelId, postId) {
     return {
-        type: ActionTypes.OPEN_CREATE_ISSUE_MODAL_WITHOUT_POST,
+        type: ActionTypes.OPEN_CREATE_OR_UPDATE_ISSUE_MODAL,
         data: {
             title,
+            milestoneTitle,
+            milestoneNumber,
+            issueNumber,
+            labels,
+            assignees,
+            description,
+            repoName,
             channelId,
+            postId,
         },
     };
 }
 
-export function closeCreateIssueModal() {
+export function openCloseOrReopenIssueModal(channelId,owner,repo,number,status,postId) {
     return {
-        type: ActionTypes.CLOSE_CREATE_ISSUE_MODAL,
+        type: ActionTypes.OPEN_CLOSE_OR_REOPEN_ISSUE_MODAL,
+        data: {
+            channelId,
+            owner,
+            repo,
+            number,
+            status,
+            postId,
+        },
+    };
+}
+
+export function closeCreateOrUpdateIssueModal() {
+    return {
+        type: ActionTypes.CLOSE_CREATE_OR_UPDATE_ISSUE_MODAL,
+    };
+}
+
+export function closeCloseOrReOpenIssueModal() {
+    return {
+        type: ActionTypes.CLOSE_CLOSE_OR_REOPEN_ISSUE_MODAL,
     };
 }
 
@@ -382,11 +464,50 @@ export function createIssue(payload) {
     };
 }
 
-export function openAttachCommentToIssueModal(postId) {
+export function closeOrReopenIssue(payload) {
+    return async (dispatch) => {
+        let data;
+        try {
+            data = await Client.closeOrReopenIssue(payload);
+        } catch (error) {
+            return {error};
+        }
+
+        const connected = await dispatch(checkAndHandleNotConnected(data));
+        if (!connected) {
+            return {error: data};
+        }
+
+        return {data};
+    };
+}
+
+export function updateIssue(payload) {
+    return async (dispatch) => {
+        let data;
+        try {
+            data = await Client.updateIssue(payload);
+        } catch (error) {
+            return {error};
+        }
+
+        const connected = await dispatch(checkAndHandleNotConnected(data));
+        if (!connected) {
+            return {error: data};
+        }
+
+        return {data};
+    };
+}
+
+export function openAttachCommentToIssueModal(postId,owner,repo,number) {
     return {
         type: ActionTypes.OPEN_ATTACH_COMMENT_TO_ISSUE_MODAL,
         data: {
             postId,
+            owner,
+            repo,
+            number,
         },
     };
 }
