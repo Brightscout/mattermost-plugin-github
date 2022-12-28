@@ -63,7 +63,7 @@ type FilteredNotification struct {
 
 type SidebarContent struct {
 	Reviews     []*github.Issue         `json:"reviews"`
-	Prs         []*github.Issue         `json:"prs"`
+	PRS         []*github.Issue         `json:"prs"`
 	Assignments []*github.Issue         `json:"assignments"`
 	Unreads     []*FilteredNotification `json:"unreads"`
 }
@@ -1001,7 +1001,7 @@ func (p *Plugin) getSidebarData(c *UserContext) *SidebarContent {
 
 	return &SidebarContent{
 		Assignments: assignments,
-		Prs:         prs,
+		PRS:         prs,
 		Reviews:     reviews,
 		Unreads:     unreads,
 	}
