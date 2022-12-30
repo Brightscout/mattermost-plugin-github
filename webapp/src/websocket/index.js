@@ -11,6 +11,7 @@ import {
 
 import {id as pluginId} from '../manifest';
 
+let timeoutId;
 export function handleConnect(store) {
     return (msg) => {
         if (!msg.data) {
@@ -63,10 +64,15 @@ export function handleReconnect(store, reminder = false) {
     return async () => {
         const {data} = await getConnected(reminder)(store.dispatch, store.getState);
         if (data && data.connected) {
-            const rand = Math.floor(Math.random() * (JitterForReconnectAPICall.MAX_TIME - JitterForReconnectAPICall.MIN_TIME + 1)) + JitterForReconnectAPICall.MIN_TIME; //eslint-disable-line no-mixed-operators
-            setTimeout(() => {
+            if (typeof timeoutId === 'number') {
+                clearTimeout(timeoutId);
+            }
+
+            const rand = Math.floor(Math.random() * (JitterForReconnectAPICall.MAX_TIME_IN_SEC - JitterForReconnectAPICall.MIN_TIME_IN_SEC + 1)) + JitterForReconnectAPICall.MIN_TIME_IN_SEC; //eslint-disable-line no-mixed-operators
+            timeoutId = setTimeout(() => {
                 getSidebarContent()(store.dispatch, store.getState);
-            }, rand);
+                timeoutId = undefined; //eslint-disable-line no-undefined
+            }, rand * 1000);
         }
     };
 }

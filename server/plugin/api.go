@@ -58,12 +58,12 @@ type PRDetails struct {
 
 type FilteredNotification struct {
 	github.Notification
-	HTMLUrl string `json:"html_url"`
+	HTMLURL string `json:"html_url"`
 }
 
 type SidebarContent struct {
 	Reviews     []*github.Issue         `json:"reviews"`
-	PRS         []*github.Issue         `json:"prs"`
+	PRs         []*github.Issue         `json:"prs"`
 	Assignments []*github.Issue         `json:"assignments"`
 	Unreads     []*FilteredNotification `json:"unreads"`
 }
@@ -696,7 +696,7 @@ func (p *Plugin) getUnreadsData(c *UserContext) []*FilteredNotification {
 
 		filteredNotifications = append(filteredNotifications, &FilteredNotification{
 			Notification: *n,
-			HTMLUrl:      fixGithubNotificationSubjectURL(subjectURL, issueNum),
+			HTMLURL:      fixGithubNotificationSubjectURL(subjectURL, issueNum),
 		})
 	}
 
@@ -994,16 +994,11 @@ func (p *Plugin) getYourAssignmentsData(c *UserContext) []*github.Issue {
 }
 
 func (p *Plugin) getSidebarData(c *UserContext) *SidebarContent {
-	assignments := p.getYourAssignmentsData(c)
-	prs := p.getYourPrsData(c)
-	reviews := p.getReviewsData(c)
-	unreads := p.getUnreadsData(c)
-
 	return &SidebarContent{
-		Assignments: assignments,
-		PRS:         prs,
-		Reviews:     reviews,
-		Unreads:     unreads,
+		Assignments: p.getYourAssignmentsData(c),
+		PRs:         p.getYourPrsData(c),
+		Reviews:     p.getReviewsData(c),
+		Unreads:     p.getUnreadsData(c),
 	}
 }
 
