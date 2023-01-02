@@ -731,6 +731,13 @@ func (p *Plugin) postIssueCommentEvent(event *github.IssueCommentEvent) {
 		Type:   "custom_git_comment",
 	}
 
+	repoName := repo.GetFullName()
+	repoName = strings.ToLower(repoName)
+	commentID := event.GetComment().GetID()
+
+	post.AddProp("gh_repo", repoName)
+	post.AddProp("gh_object_id", commentID)
+
 	labels := make([]string, len(event.GetIssue().Labels))
 	for i, v := range event.GetIssue().Labels {
 		labels[i] = v.GetName()
@@ -863,6 +870,13 @@ func (p *Plugin) postPullRequestReviewCommentEvent(event *github.PullRequestRevi
 		Type:    "custom_git_pull_review_comment",
 		Message: newReviewMessage,
 	}
+
+	repoName := repo.GetFullName()
+	repoName = strings.ToLower(repoName)
+	commentID := event.GetComment().GetID()
+
+	post.AddProp("gh_repo", repoName)
+	post.AddProp("gh_object_id", commentID)
 
 	labels := make([]string, len(event.GetPullRequest().Labels))
 	for i, v := range event.GetPullRequest().Labels {
