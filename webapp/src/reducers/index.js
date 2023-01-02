@@ -264,7 +264,7 @@ const attachCommentToIssueModalForPostId = (state = '', action) => {
             owner: action.data.owner,
             repo: action.data.repo,
             number: action.data.number,
-        }
+        };
     case ActionTypes.CLOSE_ATTACH_COMMENT_TO_ISSUE_MODAL:
         return '';
     default:

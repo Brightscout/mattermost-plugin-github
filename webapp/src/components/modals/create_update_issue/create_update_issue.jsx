@@ -31,6 +31,7 @@ const initialState = {
 
 export default class CreateOrUpdateIssueModal extends PureComponent {
     static propTypes = {
+        update: PropTypes.func.isRequired,
         close: PropTypes.func.isRequired,
         create: PropTypes.func.isRequired,
         post: PropTypes.object,
@@ -38,6 +39,13 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
         channelId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         visible: PropTypes.bool.isRequired,
+        repoName: PropTypes.string,
+        milestoneNumber: PropTypes.int,
+        milestoneTitle: PropTypes.string,
+        issueNumber: PropTypes.int,
+        description: PropTypes.string,
+        labels: PropTypes.array,
+        assignees: PropTypes.array,
     };
 
     constructor(props) {
@@ -49,19 +57,19 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
     componentDidUpdate(prevProps) {
         if (this.props.post && !prevProps.post && !this.props.title) {
             this.setState({issueDescription: this.props.post.message}); //eslint-disable-line react/no-did-update-set-state
-        } else if (this.props.channelId && (this.props.channelId !== prevProps.channelId || this.props.title !== prevProps.title || this.props.description !== prevProps.description || this.props.assignees !== prevProps.assignees || this.props.labels !== prevProps.labels || this.props.milestoneTitle !== prevProps.milestoneTitle ||this.props.milestoneNumber !== prevProps.milestoneNumber)) {
-            if(this.props.assignees){
-                this.setState({assignees: this.props.assignees})
+        } else if (this.props.channelId && (this.props.channelId !== prevProps.channelId || this.props.title !== prevProps.title || this.props.description !== prevProps.description || this.props.assignees !== prevProps.assignees || this.props.labels !== prevProps.labels || this.props.milestoneTitle !== prevProps.milestoneTitle || this.props.milestoneNumber !== prevProps.milestoneNumber)) {
+            if (this.props.assignees) {
+                this.setState({assignees: this.props.assignees}); // eslint-disable-line react/no-did-update-set-state
             }
-            if(this.props.labels){
-                this.setState({labels: this.props.labels})
+            if (this.props.labels) {
+                this.setState({labels: this.props.labels}); // eslint-disable-line react/no-did-update-set-state
             }
-            this.setState({milestone:{
+            this.setState({milestone: { // eslint-disable-line react/no-did-update-set-state
                 value: this.props.milestoneNumber,
                 label: this.props.milestoneTitle,
-            }})
-            this.setState({issueDescription: this.props.description});
-            this.setState({repo: this.props.repoName})
+            }});
+            this.setState({issueDescription: this.props.description}); // eslint-disable-line react/no-did-update-set-state
+            this.setState({repo: this.props.repoName}); // eslint-disable-line react/no-did-update-set-state
             this.setState({issueTitle: this.props.title.substring(0, MAX_TITLE_LENGTH)}); // eslint-disable-line react/no-did-update-set-state
         }
     }
@@ -96,7 +104,7 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
         };
 
         if (!issue.repo) {
-            issue.repo = this.state.repo
+            issue.repo = this.state.repo;
         }
         this.setState({submitting: true});
         if (this.props.repoName) {
@@ -149,9 +157,9 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
             return null;
         }
 
-        let repoName = this.state.repo.name
-        if(!repoName) {
-            repoName = this.state.repo
+        let repoName = this.state.repo.name;
+        if (!repoName) {
+            repoName = this.state.repo;
         }
         return (
             <>
@@ -241,7 +249,7 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
                 />
             </div>
         );
-        if(this.props.repoName){
+        if (this.props.repoName) {
             component = (
                 <div>
                     <Input
@@ -251,7 +259,7 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
                         disabled={true}
                         value={this.props.repoName}
                     />
-    
+
                     <Input
                         id={'title'}
                         label='Title for the GitHub Issue'
@@ -263,9 +271,9 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
                         onChange={this.handleIssueTitleChange}
                     />
                     {issueTitleValidationError}
-    
+
                     {this.renderIssueAttributeSelectors()}
-    
+
                     <Input
                         label='Description for the GitHub Issue'
                         type='textarea'

@@ -3,7 +3,7 @@
 
 import React, {PureComponent} from 'react';
 import PropTypes from 'prop-types';
-import {FormText, Modal} from 'react-bootstrap';
+import {Modal} from 'react-bootstrap';
 
 import FormButton from 'components/form_button';
 import Input from 'components/input';
@@ -23,9 +23,12 @@ export default class AttachIssueModal extends PureComponent {
     static propTypes = {
         close: PropTypes.func.isRequired,
         create: PropTypes.func.isRequired,
-        post: PropTypes.object,
+        post: PropTypes.object.isRequired,
         theme: PropTypes.object.isRequired,
         visible: PropTypes.bool.isRequired,
+        owner: PropTypes.string,
+        repo: PropTypes.string,
+        number: PropTypes.string,
     };
 
     constructor(props) {
@@ -42,10 +45,10 @@ export default class AttachIssueModal extends PureComponent {
             const issue = {
                 owner: this.props.owner,
                 repo: this.props.repo,
-                number:this.props.number,
+                number: this.props.number,
                 comment: this.state.comment,
                 post_id: this.props.post.id,
-                show_attached_message:false,
+                show_attached_message: false,
             };
             this.setState({submitting: true});
 
@@ -72,7 +75,7 @@ export default class AttachIssueModal extends PureComponent {
             number,
             comment: this.props.post.message,
             post_id: this.props.post.id,
-            show_attached_message:true,
+            show_attached_message: true,
         };
 
         this.setState({submitting: true});
@@ -108,7 +111,7 @@ export default class AttachIssueModal extends PureComponent {
         const {visible, theme} = this.props;
         const {error, submitting} = this.state;
         const style = getStyle(theme);
-        const modalTitle = this.props.number?'Create a comment to GitHub Issue':'Attach Message to GitHub Issue';
+        const modalTitle = this.props.number ? 'Create a comment to GitHub Issue' : 'Attach Message to GitHub Issue';
 
         if (!visible) {
             return null;
@@ -134,14 +137,14 @@ export default class AttachIssueModal extends PureComponent {
                 />
             </div>
         );
-        if(this.props.number){
+        if (this.props.number) {
             component = (
                 <div>
                     <Input
                         label='Create a comment'
                         type='textarea'
                         onChange={this.handleIssueCommentChange}
-                        value = {this.state.comment}
+                        value={this.state.comment}
                     />
 
                 </div>

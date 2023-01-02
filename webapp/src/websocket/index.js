@@ -92,7 +92,7 @@ export function handleOpenCreateOrUpdateIssueModal(store) {
         if (!msg.data) {
             return;
         }
-        store.dispatch(openCreateOrUpdateIssueModal(msg.data.title, msg.data.milestone_title, msg.data.milestone_number, msg.data.issue_number, msg.data.labels, msg.data.assignees, msg.data.description,msg.data.repo_full_name, msg.data.channel_id,msg.data.postId));
+        store.dispatch(openCreateOrUpdateIssueModal(msg.data.title, msg.data.milestone_title, msg.data.milestone_number, msg.data.issue_number, msg.data.labels, msg.data.assignees, msg.data.description, msg.data.repo_full_name, msg.data.channel_id, msg.data.postId));
     };
 }
 
@@ -101,7 +101,7 @@ export function handleOpenCloseOrReopenIssueModal(store) {
         if (!msg.data) {
             return;
         }
-        store.dispatch(openCloseOrReopenIssueModal(msg.data.channel_id,msg.data.owner,msg.data.repo,msg.data.number,msg.data.status, msg.data.postId));
+        store.dispatch(openCloseOrReopenIssueModal(msg.data.channel_id, msg.data.owner, msg.data.repo, msg.data.number, msg.data.status, msg.data.postId));
     };
 }
 
@@ -110,6 +110,6 @@ export function handleOpenAttachCommentIssueModal(store) {
         if (!msg.data) {
             return;
         }
-        store.dispatch(openAttachCommentToIssueModal(msg.data.postId,msg.data.owner,msg.data.repo,msg.data.number));
+        store.dispatch(openAttachCommentToIssueModal(msg.data.postId, msg.data.owner, msg.data.repo, msg.data.number));
     };
 }

@@ -10,7 +10,7 @@ import {closeCloseOrReOpenIssueModal, closeOrReopenIssue} from 'actions';
 import CloseOrReopenIssueModal from './close_reopen_issue';
 
 const mapStateToProps = (state) => {
-    const {channelId,owner,repo,number,status,postId} = state[`plugins-${pluginId}`].closeOrReopenIssueModal;
+    const {channelId, owner, repo, number, status, postId} = state[`plugins-${pluginId}`].closeOrReopenIssueModal;
     return {
         visible: state[`plugins-${pluginId}`].isCloseOrReopenIssueModalVisible,
         channelId,
@@ -27,4 +27,4 @@ const mapDispatchToProps = (dispatch) => bindActionCreators({
     closeOrReopenIssue,
 }, dispatch);
 
-export default connect(mapStateToProps,mapDispatchToProps)(CloseOrReopenIssueModal);
+export default connect(mapStateToProps, mapDispatchToProps)(CloseOrReopenIssueModal);

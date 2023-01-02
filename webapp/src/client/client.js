@@ -7,11 +7,11 @@ import {ClientError} from 'mattermost-redux/client/client4';
 import {id as pluginId} from '../manifest';
 
 export default class Client {
-    editIssueModal = async (owner, repo, issueNumber,postId) => {
+    editIssueModal = async (owner, repo, issueNumber, postId) => {
         return this.doGet(`${this.url}/editissuemodal?owner=${owner}&repo=${repo}&number=${issueNumber}&postId=${postId}`);
     }
 
-    closeOrReopenIssueModal = async (owner, repo, issueNumber, status,postId) => {
+    closeOrReopenIssueModal = async (owner, repo, issueNumber, status, postId) => {
         return this.doGet(`${this.url}/closereopenissuemodal?owner=${owner}&repo=${repo}&number=${issueNumber}&status=${status}&postId=${postId}`);
     }
 

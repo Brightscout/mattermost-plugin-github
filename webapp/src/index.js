@@ -11,7 +11,7 @@ import TeamSidebar from './components/team_sidebar';
 import UserAttribute from './components/user_attribute';
 import SidebarRight from './components/sidebar_right';
 import LinkTooltip from './components/link_tooltip';
-import AboutIssue from './components/about_issue';
+import GithubIssue from './components/github_issue';
 import Reducer from './reducers';
 import Client from './client';
 import {getConnected, setShowRHSAction} from './actions';
@@ -50,7 +50,7 @@ class PluginClass {
         registry.registerWebSocketEventHandler(`custom_${pluginId}_createOrUpdateIssue`, handleOpenCreateOrUpdateIssueModal(store));
         registry.registerWebSocketEventHandler(`custom_${pluginId}_attachCommentToIssue`, handleOpenAttachCommentIssueModal(store));
         registry.registerWebSocketEventHandler(`custom_${pluginId}_closeOrReopenIssue`, handleOpenCloseOrReopenIssueModal(store));
-        registry.registerPostTypeComponent(`custom_git_issue`, AboutIssue);
+        registry.registerPostTypeComponent('custom_git_issue', GithubIssue);
 
         registry.registerReconnectHandler(handleReconnect(store));
 

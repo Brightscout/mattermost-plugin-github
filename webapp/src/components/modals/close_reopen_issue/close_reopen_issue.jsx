@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useState} from 'react';
-import PropTypes from 'prop-types';
 import {Modal} from 'react-bootstrap';
+import PropTypes from 'prop-types';
 
 import FormButton from 'components/form_button';
 import Input from 'components/input';
@@ -21,7 +21,7 @@ const CloseOrReopenIssueModal = (props) => {
         }
         const issue = {
             channel_id: props.channelId,
-            comment: comment,
+            issue_comment: comment,
             status_reason: statusReason,
             repo: props.repo,
             number: props.number,
@@ -33,8 +33,8 @@ const CloseOrReopenIssueModal = (props) => {
         const changedState = await props.closeOrReopenIssue(issue);
         if (changedState.error) {
             const errMessage = getErrorMessage(changedState.error.message);
-            setError(errMessage)
-            setSubmitting(false)
+            setError(errMessage);
+            setSubmitting(false);
             return;
         }
         handleClose(e);
@@ -44,23 +44,23 @@ const CloseOrReopenIssueModal = (props) => {
         if (e && e.preventDefault) {
             e.preventDefault();
         }
-        props.closeCloseOrReOpenIssueModal()
+        props.closeCloseOrReOpenIssueModal();
     };
 
-    const handleStatusChange = (e) => {
-        setStatusReason(e.target.value)
-    }
+    const handleStatusChange = (e) => setStatusReason(e.target.value);
 
-    const handleIssueCommentChange = (comment) => setComment(comment);
+    const handleIssueCommentChange = (updatedComment) => setComment(updatedComment);
+
     const [comment, setComment] = useState('');
-    const [statusReason, setStatusReason] = useState(props.status != "Close" ? "reopened" : "completed");
+    const [statusReason, setStatusReason] = useState(props.status === 'Close' ? 'completed' : 'reopened');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState(null);
     const {theme} = props;
     const style = getStyle(theme);
-    const modalTitle = props.status +" Issue";
-    const savingMessage = props.status != "Close" ? 'Reopening' : 'Closing';
-    const status = props.status + " Issue"
+    const modalTitle = props.status + ' Issue';
+    const savingMessage = props.status === 'Close' ? 'Closing' : 'Reopening';
+    const status = props.status + ' Issue';
+
 
     let submitError = null;
     if (error) {
@@ -76,24 +76,46 @@ const CloseOrReopenIssueModal = (props) => {
                 label='Leave a comment (optional)'
                 type='textarea'
                 onChange={handleIssueCommentChange}
-                value = {comment}
+                value={comment}
             />
             <div>
-                <input type="radio" id="completed" name="close_issue" value="completed" defaultChecked onChange={handleStatusChange}/>
-                <label style={style.radioButtons} for="completed">Mark issue as completed</label><br/>
-                <input type="radio" id="not_planned" name="close_issue" value="not_planned" onChange={handleStatusChange}/>
-                <label style={style.radioButtons} for="not_planned">Mark issue as not planned</label>
+                <input
+                    type='radio'
+                    id='completed'
+                    name='close_issue'
+                    value='completed'
+                    defaultChecked // eslint-disable-line
+                    onChange={handleStatusChange}
+                />
+                <label
+                    style={style.radioButtons}
+                    htmlFor='completed'
+                >{'Mark issue as completed'}
+                </label>
+                <br/>
+                <input
+                    type='radio'
+                    id='not_planned'
+                    name='close_issue'
+                    value='not_planned'
+                    onChange={handleStatusChange}
+                />
+                <label
+                    style={style.radioButtons}
+                    htmlFor='not_planned'
+                >{'Mark issue as not planned'}
+                </label>
             </div>
         </div>
     );
-    if (props.status != "Close") {
+    if (props.status !== 'Close') {
         component = (
             <div>
                 <Input
                     label='Leave a comment (optional)'
                     type='textarea'
                     onChange={handleIssueCommentChange}
-                    value = {comment}
+                    value={comment}
                 />
             </div>
         );
@@ -123,7 +145,7 @@ const CloseOrReopenIssueModal = (props) => {
                     {component}
                 </Modal.Body>
                 <Modal.Footer>
-                        {submitError}
+                    {submitError}
                     <FormButton
                         type='button'
                         btnClass='btn-link'
@@ -143,7 +165,7 @@ const CloseOrReopenIssueModal = (props) => {
             </form>
         </Modal>
     );
-}
+};
 
 const getStyle = (theme) => ({
     modal: {
@@ -160,5 +182,18 @@ const getStyle = (theme) => ({
         margin: '7px 10px',
     },
 });
+
+CloseOrReopenIssueModal.propTypes = {
+    theme: PropTypes.object.isRequired,
+    visible: PropTypes.bool.isRequired,
+    channelId: PropTypes.string.isRequired,
+    repo: PropTypes.string.isRequired,
+    number: PropTypes.string.isRequired,
+    owner: PropTypes.string.isRequired,
+    status: PropTypes.string.isRequired,
+    postId: PropTypes.string.isRequired,
+    closeOrReopenIssue: PropTypes.func.isRequired,
+    closeCloseOrReOpenIssueModal: PropTypes.func.isRequired,
+};
 
 export default CloseOrReopenIssueModal;

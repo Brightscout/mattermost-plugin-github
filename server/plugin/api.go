@@ -1048,20 +1048,20 @@ func (p *Plugin) openAttachCommentIssueModal(c *UserContext, w http.ResponseWrit
 	owner := r.FormValue("owner")
 	repo := r.FormValue("repo")
 	number := r.FormValue("number")
-	postId := r.FormValue("postId")
+	postID := r.FormValue("postId")
 	numberInt, err := strconv.Atoi(number)
 	if err != nil {
 		p.writeAPIError(w, &APIErrorResponse{Message: "Invalid param 'number'.", StatusCode: http.StatusBadRequest})
 		return
 	}
 	userID := r.Header.Get(HeaderMattermostUserID)
-	post, appErr := p.API.GetPost(postId)
+	post, appErr := p.API.GetPost(postID)
 	if appErr != nil {
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to load post " + postId, StatusCode: http.StatusInternalServerError})
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to load post " + postID, StatusCode: http.StatusInternalServerError})
 		return
 	}
 	if post == nil {
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to load post " + postId + ": not found", StatusCode: http.StatusNotFound})
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to load post " + postID + ": not found", StatusCode: http.StatusNotFound})
 		return
 	}
 	p.API.PublishWebSocketEvent(
@@ -1081,15 +1081,15 @@ func (p *Plugin) openCloseOrReopenIssueModal(c *UserContext, w http.ResponseWrit
 	repo := r.FormValue("repo")
 	number := r.FormValue("number")
 	status := r.FormValue("status")
-	postId := r.FormValue("postId")
+	postID := r.FormValue("postId")
 	userID := r.Header.Get(HeaderMattermostUserID)
-	post, appErr := p.API.GetPost(postId)
+	post, appErr := p.API.GetPost(postID)
 	if appErr != nil {
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to load post " + postId, StatusCode: http.StatusInternalServerError})
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to load post " + postID, StatusCode: http.StatusInternalServerError})
 		return
 	}
 	if post == nil {
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to load post " + postId + ": not found", StatusCode: http.StatusNotFound})
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to load post " + postID + ": not found", StatusCode: http.StatusNotFound})
 		return
 	}
 	p.API.PublishWebSocketEvent(
@@ -1100,7 +1100,7 @@ func (p *Plugin) openCloseOrReopenIssueModal(c *UserContext, w http.ResponseWrit
 			"repo":       repo,
 			"number":     number,
 			"status":     status,
-			"postId":     postId,
+			"postId":     postID,
 		},
 		&model.WebsocketBroadcast{UserId: userID},
 	)
@@ -1110,7 +1110,7 @@ func (p *Plugin) openIssueEditModal(c *UserContext, w http.ResponseWriter, r *ht
 	owner := r.FormValue("owner")
 	repo := r.FormValue("repo")
 	number := r.FormValue("number")
-	postId := r.FormValue("postId")
+	postID := r.FormValue("postId")
 	numberInt, err := strconv.Atoi(number)
 	if err != nil {
 		p.writeAPIError(w, &APIErrorResponse{Message: "Invalid param 'number'.", StatusCode: http.StatusBadRequest})
@@ -1169,13 +1169,13 @@ func (p *Plugin) openIssueEditModal(c *UserContext, w http.ResponseWriter, r *ht
 	}
 
 	userID := r.Header.Get(HeaderMattermostUserID)
-	post, appErr := p.API.GetPost(postId)
+	post, appErr := p.API.GetPost(postID)
 	if appErr != nil {
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to load post " + postId, StatusCode: http.StatusInternalServerError})
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to load post " + postID, StatusCode: http.StatusInternalServerError})
 		return
 	}
 	if post == nil {
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to load post " + postId + ": not found", StatusCode: http.StatusNotFound})
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to load post " + postID + ": not found", StatusCode: http.StatusNotFound})
 		return
 	}
 
@@ -1184,7 +1184,7 @@ func (p *Plugin) openIssueEditModal(c *UserContext, w http.ResponseWriter, r *ht
 		map[string]interface{}{
 			"title":            *issue.Title,
 			"channel_id":       post.ChannelId,
-			"postId":           postId,
+			"postId":           postID,
 			"milestone_title":  milestoneTitle,
 			"milestone_number": milestoneNumber,
 			"assignees":        assignees,
@@ -1554,7 +1554,7 @@ func (p *Plugin) updateIssue(c *UserContext, w http.ResponseWriter, r *http.Requ
 	post.Props["labels"] = issue.Labels
 	post.Props["description"] = issue.Body
 	post.Props["title"] = issue.Title
-	if _, appErr = p.API.UpdatePost(post); err != nil {
+	if _, appErr = p.API.UpdatePost(post); appErr != nil {
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to update post " + issue.PostID, StatusCode: http.StatusInternalServerError})
 	}
 
@@ -1598,12 +1598,12 @@ func (p *Plugin) CreateCommentToIssue(c *UserContext, w http.ResponseWriter, com
 	}
 }
 
-func (p *Plugin) CloseOrReopenIssue(c *UserContext, w http.ResponseWriter, status string, StatusReason string, owner string, repo string, post *model.Post, numberInt int) {
+func (p *Plugin) CloseOrReopenIssue(c *UserContext, w http.ResponseWriter, status string, statusReason string, owner string, repo string, post *model.Post, numberInt int) {
 	currentUsername := c.GHInfo.GitHubUsername
 	githubClient := p.githubConnectUser(c.Context.Ctx, c.GHInfo)
 	ghIssue := &github.IssueRequest{
 		State:       &(status),
-		StateReason: &StatusReason,
+		StateReason: &statusReason,
 	}
 
 	issue, resp, err := githubClient.Issues.Edit(c.Ctx, owner, repo, numberInt, ghIssue)
@@ -1626,11 +1626,12 @@ func (p *Plugin) CloseOrReopenIssue(c *UserContext, w http.ResponseWriter, statu
 		return
 	}
 	var permalinkReplyMessage string
-	if StatusReason == "completed" {
+	switch statusReason {
+	case "completed":
 		permalinkReplyMessage = fmt.Sprintf("Issue closed as not completed [#%v](%v)", numberInt, issue.GetHTMLURL())
-	} else if StatusReason == "not_planned" {
+	case "not_planned":
 		permalinkReplyMessage = fmt.Sprintf("Issue closed as not planned [#%v](%v)", numberInt, issue.GetHTMLURL())
-	} else {
+	default:
 		permalinkReplyMessage = fmt.Sprintf("Issue reopend [#%v](%v)", numberInt, issue.GetHTMLURL())
 	}
 
@@ -1656,7 +1657,7 @@ func (p *Plugin) CloseOrReopenIssue(c *UserContext, w http.ResponseWriter, statu
 	} else {
 		post.Props["status"] = "Close"
 	}
-	if _, appErr = p.API.UpdatePost(post); err != nil {
+	if _, appErr = p.API.UpdatePost(post); appErr != nil {
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to update post " + post.Id, StatusCode: http.StatusInternalServerError})
 	}
 	p.writeJSON(w, issue)
@@ -1665,7 +1666,7 @@ func (p *Plugin) CloseOrReopenIssue(c *UserContext, w http.ResponseWriter, statu
 func (p *Plugin) closeOrReopenIssue(c *UserContext, w http.ResponseWriter, r *http.Request) {
 	type CommentAndCloseRequest struct {
 		ChannelID    string `json:"channel_id"`
-		Comment      string `json:"comment"`
+		IssueComment string `json:"issue_comment"`
 		StatusReason string `json:"status_reason"`
 		Number       string `json:"number"`
 		Owner        string `json:"owner"`
@@ -1701,8 +1702,8 @@ func (p *Plugin) closeOrReopenIssue(c *UserContext, w http.ResponseWriter, r *ht
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to get username", StatusCode: http.StatusInternalServerError})
 		return
 	}
-	if req.Comment != "" {
-		p.CreateCommentToIssue(c, w, req.Comment, req.Owner, req.Repository, post, numberInt)
+	if req.IssueComment != "" {
+		p.CreateCommentToIssue(c, w, req.IssueComment, req.Owner, req.Repository, post, numberInt)
 	}
 
 	if req.Status == "Close" {

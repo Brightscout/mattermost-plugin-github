@@ -211,11 +211,11 @@ export function getMilestoneOptions(repo) {
     };
 }
 
-export function attachCommentIssueModal(owner,repo,issueNumber,postId) {
+export function attachCommentIssueModal(owner, repo, issueNumber, postId) {
     return async (dispatch, getState) => {
         let data;
         try {
-            data = await Client.attachCommentIssueModal(owner,repo,issueNumber,postId);
+            data = await Client.attachCommentIssueModal(owner, repo, issueNumber, postId);
         } catch (error) {
             return {error};
         }
@@ -229,11 +229,11 @@ export function attachCommentIssueModal(owner,repo,issueNumber,postId) {
     };
 }
 
-export function editIssueModal(owner,repo,issueNumber,postId) {
+export function editIssueModal(owner, repo, issueNumber, postId) {
     return async (dispatch, getState) => {
         let data;
         try {
-            data = await Client.editIssueModal(owner,repo,issueNumber,postId);
+            data = await Client.editIssueModal(owner, repo, issueNumber, postId);
         } catch (error) {
             return {error};
         }
@@ -247,11 +247,11 @@ export function editIssueModal(owner,repo,issueNumber,postId) {
     };
 }
 
-export function closeOrReopenIssueModal(owner,repo,issueNumber,status,postId) {
+export function closeOrReopenIssueModal(owner, repo, issueNumber, status, postId) {
     return async (dispatch, getState) => {
         let data;
         try {
-            data = await Client.closeOrReopenIssueModal(owner,repo,issueNumber,status,postId);
+            data = await Client.closeOrReopenIssueModal(owner, repo, issueNumber, status, postId);
         } catch (error) {
             return {error};
         }
@@ -420,7 +420,7 @@ export function openCreateOrUpdateIssueModal(title, milestoneTitle, milestoneNum
     };
 }
 
-export function openCloseOrReopenIssueModal(channelId,owner,repo,number,status,postId) {
+export function openCloseOrReopenIssueModal(channelId, owner, repo, number, status, postId) {
     return {
         type: ActionTypes.OPEN_CLOSE_OR_REOPEN_ISSUE_MODAL,
         data: {
@@ -500,7 +500,7 @@ export function updateIssue(payload) {
     };
 }
 
-export function openAttachCommentToIssueModal(postId,owner,repo,number) {
+export function openAttachCommentToIssueModal(postId, owner, repo, number) {
     return {
         type: ActionTypes.OPEN_ATTACH_COMMENT_TO_ISSUE_MODAL,
         data: {
