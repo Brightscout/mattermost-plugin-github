@@ -350,8 +350,8 @@ func (p *Plugin) postPullRequestEvent(event *github.PullRequestEvent) {
 	pr := event.GetPullRequest()
 	eventLabel := event.GetLabel().GetName()
 	labels := make([]string, len(pr.Labels))
-	for i, v := range pr.Labels {
-		labels[i] = v.GetName()
+	for index, label := range pr.Labels {
+		labels[index] = label.GetName()
 	}
 
 	closedPRMessage, err := renderTemplate("closedPR", event)
@@ -525,8 +525,8 @@ func (p *Plugin) postIssueEvent(event *github.IssuesEvent) {
 
 	eventLabel := event.GetLabel().GetName()
 	labels := make([]string, len(issue.Labels))
-	for i, v := range issue.Labels {
-		labels[i] = v.GetName()
+	for index, label := range issue.Labels {
+		labels[index] = label.GetName()
 	}
 
 	for _, sub := range subscribedChannels {
@@ -550,8 +550,8 @@ func (p *Plugin) postIssueEvent(event *github.IssuesEvent) {
 		renderedMessage = p.sanitizeDescription(renderedMessage)
 
 		assignees := make([]string, len(issue.Assignees))
-		for i, v := range issue.Assignees {
-			assignees[i] = v.GetLogin()
+		for index, user := range issue.Assignees {
+			assignees[index] = user.GetLogin()
 		}
 		description := ""
 		if issue.Body != nil {
@@ -566,15 +566,15 @@ func (p *Plugin) postIssueEvent(event *github.IssuesEvent) {
 		if action == actionOpened {
 			post.Type = "custom_git_issue"
 			post.Props = map[string]interface{}{
-				"title":        *issue.Title,
-				"issue_url":    *issue.HTMLURL,
-				"issue_number": *issue.Number,
-				"description":  description,
-				"assignees":    assignees,
-				"labels":       labels,
-				"repo_owner":   *repo.Owner.Login,
-				"repo_name":    *repo.Name,
-				"status":       "Close",
+				TitleForProps:       *issue.Title,
+				IssueUrlForProps:    *issue.HTMLURL,
+				IssueNumberForProps: *issue.Number,
+				DescriptionForProps: description,
+				AssigneesForProps:   assignees,
+				LabelsForProps:      labels,
+				RepoOwnerForProps:   *repo.Owner.Login,
+				RepoNameForProps:    *repo.Name,
+				IssueStatus:         Close,
 			}
 		}
 
@@ -755,8 +755,8 @@ func (p *Plugin) postIssueCommentEvent(event *github.IssueCommentEvent) {
 	}
 
 	labels := make([]string, len(event.GetIssue().Labels))
-	for i, v := range event.GetIssue().Labels {
-		labels[i] = v.GetName()
+	for index, label := range event.GetIssue().Labels {
+		labels[index] = label.GetName()
 	}
 
 	for _, sub := range subs {
@@ -834,8 +834,8 @@ func (p *Plugin) postPullRequestReviewEvent(event *github.PullRequestReviewEvent
 	}
 
 	labels := make([]string, len(event.GetPullRequest().Labels))
-	for i, v := range event.GetPullRequest().Labels {
-		labels[i] = v.GetName()
+	for index, label := range event.GetPullRequest().Labels {
+		labels[index] = label.GetName()
 	}
 
 	for _, sub := range subs {
@@ -888,8 +888,8 @@ func (p *Plugin) postPullRequestReviewCommentEvent(event *github.PullRequestRevi
 	}
 
 	labels := make([]string, len(event.GetPullRequest().Labels))
-	for i, v := range event.GetPullRequest().Labels {
-		labels[i] = v.GetName()
+	for index, label := range event.GetPullRequest().Labels {
+		labels[index] = label.GetName()
 	}
 
 	for _, sub := range subs {
