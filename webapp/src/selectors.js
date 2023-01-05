@@ -52,14 +52,15 @@ function mapPrsToDetails(prs, details) {
 export const getSidebarData = createSelector(
     getPluginState,
     (pluginState) => {
+        const {username, sidebarContent, reviewDetails, yourPrDetails, organization, rhsState} = pluginState;
         return {
-            username: pluginState.username,
-            reviews: mapPrsToDetails(pluginState.sidebarContent.reviews || emptyArray, pluginState.reviewDetails),
-            yourPrs: mapPrsToDetails(pluginState.sidebarContent.prs || emptyArray, pluginState.yourPrDetails),
-            yourAssignments: pluginState.sidebarContent.assignments || emptyArray,
-            unreads: pluginState.sidebarContent.unreads || emptyArray,
-            org: pluginState.organization,
-            rhsState: pluginState.rhsState,
+            username,
+            reviews: mapPrsToDetails(sidebarContent.reviews || emptyArray, reviewDetails),
+            yourPrs: mapPrsToDetails(sidebarContent.prs || emptyArray, yourPrDetails),
+            yourAssignments: sidebarContent.assignments || emptyArray,
+            unreads: sidebarContent.unreads || emptyArray,
+            org: organization,
+            rhsState,
         };
     },
 );
