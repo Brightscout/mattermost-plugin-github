@@ -12,7 +12,7 @@ import {
 import {id as pluginId} from '../manifest';
 
 let timeoutId;
-const RECONNECT_JITTER_MAX_TIME = 10;
+const RECONNECT_JITTER_MAX_TIME_IN_SEC = 10;
 export function handleConnect(store) {
     return (msg) => {
         if (!msg.data) {
@@ -69,7 +69,7 @@ export function handleReconnect(store, reminder = false) {
                 clearTimeout(timeoutId);
             }
 
-            const rand = Math.floor(Math.random() * RECONNECT_JITTER_MAX_TIME) + 1;
+            const rand = Math.floor(Math.random() * RECONNECT_JITTER_MAX_TIME_IN_SEC) + 1;
             timeoutId = setTimeout(() => {
                 getSidebarContent()(store.dispatch, store.getState);
                 timeoutId = undefined; //eslint-disable-line no-undefined
