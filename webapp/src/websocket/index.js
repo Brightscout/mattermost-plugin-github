@@ -101,7 +101,7 @@ export function handleOpenCloseOrReopenIssueModal(store) {
         if (!msg.data) {
             return;
         }
-        store.dispatch(openCloseOrReopenIssueModal(msg.data.channel_id, msg.data.owner, msg.data.repo, msg.data.number, msg.data.status, msg.data.postId));
+        store.dispatch(openCloseOrReopenIssueModal(msg.data));
     };
 }
 
@@ -110,6 +110,6 @@ export function handleOpenAttachCommentIssueModal(store) {
         if (!msg.data) {
             return;
         }
-        store.dispatch(openAttachCommentToIssueModal(msg.data.postId, msg.data.owner, msg.data.repo, msg.data.number));
+        store.dispatch(openAttachCommentToIssueModal(msg.data));
     };
 }

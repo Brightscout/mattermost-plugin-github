@@ -420,16 +420,11 @@ export function openCreateOrUpdateIssueModal(title, milestoneTitle, milestoneNum
     };
 }
 
-export function openCloseOrReopenIssueModal(channelId, owner, repo, number, status, postId) {
+export function openCloseOrReopenIssueModal(messageData) {
     return {
         type: ActionTypes.OPEN_CLOSE_OR_REOPEN_ISSUE_MODAL,
         data: {
-            channelId,
-            owner,
-            repo,
-            number,
-            status,
-            postId,
+            messageData,
         },
     };
 }
@@ -500,14 +495,11 @@ export function updateIssue(payload) {
     };
 }
 
-export function openAttachCommentToIssueModal(postId, owner, repo, number) {
+export function openAttachCommentToIssueModal(messageData) {
     return {
         type: ActionTypes.OPEN_ATTACH_COMMENT_TO_ISSUE_MODAL,
         data: {
-            postId,
-            owner,
-            repo,
-            number,
+            messageData,
         },
     };
 }

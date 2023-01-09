@@ -265,13 +265,11 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
                         label='Title for the GitHub Issue'
                         type='input'
                         required={true}
-                        disabled={false}
                         maxLength={MAX_TITLE_LENGTH}
                         value={this.state.issueTitle}
                         onChange={this.handleIssueTitleChange}
                     />
                     {issueTitleValidationError}
-
                     {this.renderIssueAttributeSelectors()}
 
                     <Input

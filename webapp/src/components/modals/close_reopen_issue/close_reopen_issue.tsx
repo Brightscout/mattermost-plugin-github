@@ -3,73 +3,67 @@
 
 import React, {useState} from 'react';
 import {Modal} from 'react-bootstrap';
-import PropTypes from 'prop-types';
 
-import FormButton from 'components/form_button';
-import Input from 'components/input';
+import {Theme} from 'mattermost-redux/types/preferences';
 
-import {getErrorMessage} from 'utils/user_utils';
+import {useDispatch, useSelector} from 'react-redux';
 
-const CloseOrReopenIssueModal = (props) => {
-    if (!props.visible) {
+import {closeCloseOrReOpenIssueModal, closeOrReopenIssue} from '../../../actions';
+
+import {getCloseOrReopenIssueModalData} from '../../../selectors';
+
+import FormButton from '../../form_button';
+import Input from '../../input';
+
+const CloseOrReopenIssueModal = ({theme}: {theme: Theme}) => {
+    const dispatch = useDispatch();
+    const closeOrReopenIssueModalData = useSelector(getCloseOrReopenIssueModalData);
+    const messageData = closeOrReopenIssueModalData.messageData;
+    const visible = closeOrReopenIssueModalData.visible;
+    const [statusReason, setStatusReason] = useState(messageData?.status === 'Close' ? 'reopened' : 'completed');
+    const [submitting, setSubmitting] = useState(false);
+    const [comment, setComment] = useState('');
+    if (!visible) {
         return null;
     }
 
-    const handleCloseOrReopenIssue = async (e) => {
+    const handleCloseOrReopenIssue = async (e: React.SyntheticEvent) => {
         if (e && e.preventDefault) {
             e.preventDefault();
         }
         const issue = {
-            channel_id: props.channelId,
+            channel_id: messageData.channel_id,
             issue_comment: comment,
             status_reason: statusReason,
-            repo: props.repo,
-            number: props.number,
-            owner: props.owner,
-            status: props.status,
-            postId: props.postId,
+            repo: messageData.repo,
+            number: messageData.number,
+            owner: messageData.owner,
+            status: messageData.status,
+            postId: messageData.postId,
         };
         setSubmitting(true);
-        const changedState = await props.closeOrReopenIssue(issue);
-        if (changedState.error) {
-            const errMessage = getErrorMessage(changedState.error.message);
-            setError(errMessage);
-            setSubmitting(false);
-            return;
-        }
+        await dispatch(closeOrReopenIssue(issue));
+        setSubmitting(false);
         handleClose(e);
     };
 
-    const handleClose = (e) => {
+    const handleClose = (e: React.SyntheticEvent) => {
         if (e && e.preventDefault) {
             e.preventDefault();
         }
-        props.closeCloseOrReOpenIssueModal();
+        dispatch(closeCloseOrReOpenIssueModal());
     };
 
-    const handleStatusChange = (e) => setStatusReason(e.target.value);
+    const handleStatusChange = (e: React.ChangeEvent<HTMLInputElement>) => setStatusReason(e.target.value);
 
-    const handleIssueCommentChange = (updatedComment) => setComment(updatedComment);
+    const handleIssueCommentChange = (updatedComment: string) => setComment(updatedComment);
 
-    const [comment, setComment] = useState('');
-    const [statusReason, setStatusReason] = useState(props.status === 'Close' ? 'completed' : 'reopened');
-    const [submitting, setSubmitting] = useState(false);
-    const [error, setError] = useState(null);
-    const {theme} = props;
     const style = getStyle(theme);
-    const modalTitle = props.status + ' Issue';
-    const savingMessage = props.status === 'Close' ? 'Closing' : 'Reopening';
-    const status = props.status + ' Issue';
+    const modalTitle = messageData.status + ' Issue';
+    const savingMessage = messageData.status === 'Close' ? 'Closing' : 'Reopening';
+    const status = messageData.status + ' Issue';
 
-
-    let submitError = null;
-    if (error) {
-        submitError = (
-            <p className='help-text error-text'>
-                <span>{error}</span>
-            </p>
-        );
-    }
+    const submitError = null;
     let component = (
         <div>
             <Input
@@ -108,7 +102,7 @@ const CloseOrReopenIssueModal = (props) => {
             </div>
         </div>
     );
-    if (props.status !== 'Close') {
+    if (messageData.status !== 'Close') {
         component = (
             <div>
                 <Input
@@ -167,7 +161,7 @@ const CloseOrReopenIssueModal = (props) => {
     );
 };
 
-const getStyle = (theme) => ({
+const getStyle = (theme: Theme) => ({
     modal: {
         padding: '2em 2em 3em',
         color: theme.centerChannelColor,
@@ -182,18 +176,5 @@ const getStyle = (theme) => ({
         margin: '7px 10px',
     },
 });
-
-CloseOrReopenIssueModal.propTypes = {
-    theme: PropTypes.object.isRequired,
-    visible: PropTypes.bool.isRequired,
-    channelId: PropTypes.string.isRequired,
-    repo: PropTypes.string.isRequired,
-    number: PropTypes.string.isRequired,
-    owner: PropTypes.string.isRequired,
-    status: PropTypes.string.isRequired,
-    postId: PropTypes.string.isRequired,
-    closeOrReopenIssue: PropTypes.func.isRequired,
-    closeCloseOrReOpenIssueModal: PropTypes.func.isRequired,
-};
 
 export default CloseOrReopenIssueModal;

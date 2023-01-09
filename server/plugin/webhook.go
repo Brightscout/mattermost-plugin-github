@@ -6,6 +6,7 @@ import (
 	"crypto/sha1" //nolint:gosec // GitHub webhooks are signed using sha1 https://developer.github.com/webhooks/.
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -794,7 +795,7 @@ func (p *Plugin) postIssueCommentEvent(event *github.IssueCommentEvent) {
 }
 
 func (p *Plugin) senderMutedByReceiver(userID string, sender string) bool {
-	mutedUsernameBytes, _ := p.API.KVGet(userID + "-muted-users")
+	mutedUsernameBytes, _ := p.API.KVGet(fmt.Sprintf("%s-muted-users", userID))
 	mutedUsernames := string(mutedUsernameBytes)
 	return strings.Contains(mutedUsernames, sender)
 }

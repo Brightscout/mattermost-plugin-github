@@ -242,12 +242,7 @@ const closeOrReopenIssueModal = (state = '', action) => {
     case ActionTypes.OPEN_CLOSE_OR_REOPEN_ISSUE_MODAL:
         return {
             ...state,
-            channelId: action.data.channelId,
-            owner: action.data.owner,
-            repo: action.data.repo,
-            number: action.data.number,
-            status: action.data.status,
-            postId: action.data.postId,
+            messageData: action.data.messageData,
         };
     case ActionTypes.CLOSE_CLOSE_OR_REOPEN_ISSUE_MODAL:
         return {};
@@ -260,10 +255,7 @@ const attachCommentToIssueModalForPostId = (state = '', action) => {
     switch (action.type) {
     case ActionTypes.OPEN_ATTACH_COMMENT_TO_ISSUE_MODAL:
         return {
-            postId: action.data.postId,
-            owner: action.data.owner,
-            repo: action.data.repo,
-            number: action.data.number,
+            messageData: action.data.messageData,
         };
     case ActionTypes.CLOSE_ATTACH_COMMENT_TO_ISSUE_MODAL:
         return '';

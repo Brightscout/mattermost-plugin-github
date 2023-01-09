@@ -8,15 +8,15 @@ import {id as pluginId} from '../manifest';
 
 export default class Client {
     editIssueModal = async (owner, repo, issueNumber, postId) => {
-        return this.doGet(`${this.url}/editissuemodal?owner=${owner}&repo=${repo}&number=${issueNumber}&postId=${postId}`);
+        return this.doPost(`${this.url}/editissuemodal?owner=${owner}&repo=${repo}&number=${issueNumber}&postId=${postId}`);
     }
 
     closeOrReopenIssueModal = async (owner, repo, issueNumber, status, postId) => {
-        return this.doGet(`${this.url}/closereopenissuemodal?owner=${owner}&repo=${repo}&number=${issueNumber}&status=${status}&postId=${postId}`);
+        return this.doPost(`${this.url}/closereopenissuemodal?owner=${owner}&repo=${repo}&number=${issueNumber}&status=${status}&postId=${postId}`);
     }
 
     attachCommentIssueModal = async (owner, repo, issueNumber, postId) => {
-        return this.doGet(`${this.url}/attachcommentissuemodal?owner=${owner}&repo=${repo}&number=${issueNumber}&postId=${postId}`);
+        return this.doPost(`${this.url}/attachcommentissuemodal?owner=${owner}&repo=${repo}&number=${issueNumber}&postId=${postId}`);
     }
 
     setServerRoute(url) {

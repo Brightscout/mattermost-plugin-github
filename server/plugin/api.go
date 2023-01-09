@@ -44,8 +44,9 @@ const (
 	IssueUrlForProps    = "issue_url"
 	RepoOwnerForProps   = "repo_owner"
 	RepoNameForProps    = "repo_name"
-	Close               = "Close"
-	Reopen              = "Reopen"
+
+	Close  = "Close"
+	Reopen = "Reopen"
 )
 
 type OAuthState struct {
@@ -111,14 +112,14 @@ type CreateIssueCommentRequest struct {
 	ShowAttachedMessage bool   `json:"show_attached_message"`
 }
 
-// Only send down fields to client that are needed
+// Only send down fields to the client that are needed
 type RepositoryResponse struct {
 	Name        string          `json:"name,omitempty"`
 	FullName    string          `json:"full_name,omitempty"`
 	Permissions map[string]bool `json:"permissions,omitempty"`
 }
 
-type IssueRequestToUpdate struct {
+type UpdateIssueRequest struct {
 	Title       string   `json:"title"`
 	Body        string   `json:"body"`
 	Repo        string   `json:"repo"`
@@ -141,7 +142,7 @@ type CommentAndCloseRequest struct {
 	PostID       string `json:"postId"`
 }
 
-type IssueRequestToCreate struct {
+type CreateIssueRequest struct {
 	Title     string   `json:"title"`
 	Body      string   `json:"body"`
 	Repo      string   `json:"repo"`
@@ -180,8 +181,7 @@ func (p *Plugin) writeJSON(w http.ResponseWriter, v interface{}) {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
-	_, err = w.Write(b)
-	if err != nil {
+	if _, err = w.Write(b); err != nil {
 		p.API.LogWarn("Failed to write JSON response", "error", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -198,8 +198,7 @@ func (p *Plugin) writeAPIError(w http.ResponseWriter, apiErr *APIErrorResponse) 
 
 	w.WriteHeader(apiErr.StatusCode)
 
-	_, err = w.Write(b)
-	if err != nil {
+	if _, err = w.Write(b); err != nil {
 		p.API.LogWarn("Failed to write JSON response", "error", err.Error())
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -231,9 +230,9 @@ func (p *Plugin) initializeAPI() {
 	apiRouter.HandleFunc("/createissue", p.checkAuth(p.attachUserContext(p.createIssue), ResponseTypePlain)).Methods(http.MethodPost)
 	apiRouter.HandleFunc("/closeorreopenissue", p.checkAuth(p.attachUserContext(p.closeOrReopenIssue), ResponseTypePlain)).Methods(http.MethodPost)
 	apiRouter.HandleFunc("/updateissue", p.checkAuth(p.attachUserContext(p.updateIssue), ResponseTypePlain)).Methods(http.MethodPost)
-	apiRouter.HandleFunc("/editissuemodal", p.checkAuth(p.attachUserContext(p.openIssueEditModal), ResponseTypePlain)).Methods(http.MethodGet)
-	apiRouter.HandleFunc("/closereopenissuemodal", p.checkAuth(p.attachUserContext(p.openCloseOrReopenIssueModal), ResponseTypePlain)).Methods(http.MethodGet)
-	apiRouter.HandleFunc("/attachcommentissuemodal", p.checkAuth(p.attachUserContext(p.openAttachCommentIssueModal), ResponseTypePlain)).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/editissuemodal", p.checkAuth(p.attachUserContext(p.openIssueEditModal), ResponseTypePlain)).Methods(http.MethodPost)
+	apiRouter.HandleFunc("/closereopenissuemodal", p.checkAuth(p.attachUserContext(p.openCloseOrReopenIssueModal), ResponseTypePlain)).Methods(http.MethodPost)
+	apiRouter.HandleFunc("/attachcommentissuemodal", p.checkAuth(p.attachUserContext(p.openAttachCommentIssueModal), ResponseTypePlain)).Methods(http.MethodPost)
 	apiRouter.HandleFunc("/createissuecomment", p.checkAuth(p.attachUserContext(p.createIssueComment), ResponseTypePlain)).Methods(http.MethodPost)
 	apiRouter.HandleFunc("/mentions", p.checkAuth(p.attachUserContext(p.getMentions), ResponseTypePlain)).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/unreads", p.checkAuth(p.attachUserContext(p.getUnreads), ResponseTypePlain)).Methods(http.MethodGet)
@@ -387,7 +386,7 @@ func (p *Plugin) connectUserToGitHub(c *Context, w http.ResponseWriter, r *http.
 		return
 	}
 
-	appErr := p.API.KVSetWithExpiry(githubOauthKey+state.Token, stateBytes, TokenTTL)
+	appErr := p.API.KVSetWithExpiry(fmt.Sprintf("%s%s", githubOauthKey, state.Token), stateBytes, TokenTTL)
 	if appErr != nil {
 		http.Error(w, "error setting stored state", http.StatusBadRequest)
 		return
@@ -442,7 +441,7 @@ func (p *Plugin) completeConnectUserToGitHub(c *Context, w http.ResponseWriter, 
 
 	stateToken := r.URL.Query().Get("state")
 
-	storedState, appErr := p.API.KVGet(githubOauthKey + stateToken)
+	storedState, appErr := p.API.KVGet(fmt.Sprintf("%s%s", githubOauthKey, stateToken))
 	if appErr != nil {
 		c.Log.Warnf("Failed to get state token", "error", appErr.Error())
 
@@ -458,10 +457,8 @@ func (p *Plugin) completeConnectUserToGitHub(c *Context, w http.ResponseWriter, 
 		return
 	}
 
-	appErr = p.API.KVDelete(githubOauthKey + stateToken)
-	if appErr != nil {
+	if appErr = p.API.KVDelete(fmt.Sprintf("%s%s", githubOauthKey, stateToken)); appErr != nil {
 		c.Log.WithError(appErr).Warnf("Failed to delete state token")
-
 		rErr = errors.Wrap(appErr, "error deleting stored state")
 		http.Error(w, rErr.Error(), http.StatusBadRequest)
 		return
@@ -537,8 +534,7 @@ func (p *Plugin) completeConnectUserToGitHub(c *Context, w http.ResponseWriter, 
 	}
 
 	if stepName == stepOAuthConnect {
-		err = flow.Go(stepWebhookQuestion)
-		if err != nil {
+		if err = flow.Go(stepWebhookQuestion); err != nil {
 			c.Log.WithError(err).Warnf("Failed go to next step")
 		}
 	} else {
@@ -603,8 +599,7 @@ func (p *Plugin) completeConnectUserToGitHub(c *Context, w http.ResponseWriter, 
 			`
 
 	w.Header().Set("Content-Type", "text/html")
-	_, err = w.Write([]byte(html))
-	if err != nil {
+	if _, err = w.Write([]byte(html)); err != nil {
 		c.Log.WithError(err).Warnf("Failed to write HTML response")
 		w.WriteHeader(http.StatusInternalServerError)
 		return
@@ -692,7 +687,7 @@ func (p *Plugin) getConnected(c *Context, w http.ResponseWriter, r *http.Request
 		}
 	}
 
-	privateRepoStoreKey := info.UserID + githubPrivateRepoKey
+	privateRepoStoreKey := fmt.Sprintf("%s%s", info.UserID, githubPrivateRepoKey)
 	if config.EnablePrivateRepo && !info.AllowedPrivateRepos {
 		val, err := p.API.KVGet(privateRepoStoreKey)
 		if err != nil {
@@ -708,8 +703,7 @@ func (p *Plugin) getConnected(c *Context, w http.ResponseWriter, r *http.Request
 			} else {
 				p.CreateBotDMPost(info.UserID, fmt.Sprintf(message, "`/github connect private`."), "")
 			}
-			err := p.API.KVSet(privateRepoStoreKey, []byte("1"))
-			if err != nil {
+			if err := p.API.KVSet(privateRepoStoreKey, []byte("1")); err != nil {
 				c.Log.WithError(err).Warnf("Unable to set private repo key value")
 			}
 		}
@@ -957,12 +951,12 @@ func (p *Plugin) createIssueComment(c *UserContext, w http.ResponseWriter, r *ht
 	}
 
 	if req.Owner == "" {
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "Please provide a valid repo owner.", StatusCode: http.StatusBadRequest})
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "Please provide a valid repository owner.", StatusCode: http.StatusBadRequest})
 		return
 	}
 
 	if req.Repo == "" {
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "Please provide a valid repo.", StatusCode: http.StatusBadRequest})
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "Please provide a valid repository.", StatusCode: http.StatusBadRequest})
 		return
 	}
 
@@ -999,7 +993,7 @@ func (p *Plugin) createIssueComment(c *UserContext, w http.ResponseWriter, r *ht
 	permalinkMessage := fmt.Sprintf("*@%s attached a* [message](%s) *from %s*\n\n", currentUsername, permalink, commentUsername)
 
 	if req.ShowAttachedMessage {
-		req.Comment = permalinkMessage + req.Comment
+		req.Comment = fmt.Sprintf("%s%s", permalinkMessage, req.Comment)
 	}
 	comment := &github.IssueComment{
 		Body: &req.Comment,
@@ -1011,7 +1005,7 @@ func (p *Plugin) createIssueComment(c *UserContext, w http.ResponseWriter, r *ht
 		if rawResponse != nil {
 			statusCode = rawResponse.StatusCode
 		}
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to create an issue comment: " + getFailReason(statusCode, req.Repo, currentUsername), StatusCode: statusCode})
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to create an issue comment: %s", getFailReason(statusCode, req.Repo, currentUsername)), StatusCode: statusCode})
 		return
 	}
 
@@ -1029,9 +1023,8 @@ func (p *Plugin) createIssueComment(c *UserContext, w http.ResponseWriter, r *ht
 		UserId:    c.UserID,
 	}
 
-	_, appErr = p.API.CreatePost(reply)
-	if appErr != nil {
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to create notification post " + req.PostID, StatusCode: http.StatusInternalServerError})
+	if _, appErr = p.API.CreatePost(reply); appErr != nil {
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to create the notification post %s", req.PostID), StatusCode: http.StatusInternalServerError})
 		return
 	}
 
@@ -1109,6 +1102,7 @@ func (p *Plugin) openAttachCommentIssueModal(c *UserContext, w http.ResponseWrit
 		p.writeAPIError(w, &APIErrorResponse{Message: "Invalid param 'number'.", StatusCode: http.StatusBadRequest})
 		return
 	}
+
 	userID := r.Header.Get(HeaderMattermostUserID)
 	post, appErr := p.API.GetPost(postID)
 	if appErr != nil {
@@ -1247,7 +1241,7 @@ func (p *Plugin) openIssueEditModal(c *UserContext, w http.ResponseWriter, r *ht
 			"assignees":        assignees,
 			"labels":           labels,
 			"description":      description,
-			"repo_full_name":   owner + "/" + repo,
+			"repo_full_name":   fmt.Sprintf("%s/%s", owner, repo),
 			"issue_number":     *issue.Number,
 		},
 		&model.WebsocketBroadcast{UserId: userID},
@@ -1471,7 +1465,7 @@ func (p *Plugin) getRepositories(c *UserContext, w http.ResponseWriter, r *http.
 	p.writeJSON(w, resp)
 }
 
-func (p *Plugin) updatePost(post *model.Post, issue *IssueRequestToUpdate, w http.ResponseWriter) {
+func (p *Plugin) updatePost(post *model.Post, issue *UpdateIssueRequest, w http.ResponseWriter) {
 	post, appErr := p.API.GetPost(issue.PostID)
 	if appErr != nil {
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s", issue.PostID), StatusCode: http.StatusInternalServerError})
@@ -1487,11 +1481,11 @@ func (p *Plugin) updatePost(post *model.Post, issue *IssueRequestToUpdate, w htt
 	post.Props[DescriptionForProps] = issue.Body
 	post.Props[TitleForProps] = issue.Title
 	if _, appErr = p.API.UpdatePost(post); appErr != nil {
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to update post " + issue.PostID, StatusCode: http.StatusInternalServerError})
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to update the post %s", issue.PostID), StatusCode: http.StatusInternalServerError})
 	}
 }
 
-func (p *Plugin) validateIssueRequestToUpdate(issue *IssueRequestToUpdate, w http.ResponseWriter) bool {
+func (p *Plugin) validateIssueRequestToUpdate(issue *UpdateIssueRequest, w http.ResponseWriter) bool {
 	if issue.Title == "" {
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "Please provide a valid issue title.", StatusCode: http.StatusBadRequest})
 		return false
@@ -1505,8 +1499,8 @@ func (p *Plugin) validateIssueRequestToUpdate(issue *IssueRequestToUpdate, w htt
 }
 
 func (p *Plugin) updateIssue(c *UserContext, w http.ResponseWriter, r *http.Request) {
-	// get data for the issue from the request body and fill IssueRequestToUpdate object so that we can update the issue
-	issue := &IssueRequestToUpdate{}
+	// get data for the issue from the request body and fill UpdateIssueRequest to update the issue
+	issue := &UpdateIssueRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&issue); err != nil {
 		c.Log.WithError(err).Warnf("Error decoding the JSON body")
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "Please provide a valid JSON object.", StatusCode: http.StatusBadRequest})
@@ -1554,7 +1548,7 @@ func (p *Plugin) updateIssue(c *UserContext, w http.ResponseWriter, r *http.Requ
 
 	splittedRepo := strings.Split(issue.Repo, "/")
 	if len(splittedRepo) < 2 {
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "Please provide a valid repo", StatusCode: http.StatusBadRequest})
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "Please provide a valid repository", StatusCode: http.StatusBadRequest})
 	}
 
 	owner := splittedRepo[0]
@@ -1572,10 +1566,10 @@ func (p *Plugin) updateIssue(c *UserContext, w http.ResponseWriter, r *http.Requ
 		c.Log.WithError(err).Warnf("Failed to update the issue")
 		p.writeAPIError(w, &APIErrorResponse{
 			ID: "",
-			Message: "failed to update issue: " + getFailReason(resp.StatusCode,
+			Message: fmt.Sprintf("failed to update issue: %s", getFailReason(resp.StatusCode,
 				issue.Repo,
 				currentUser.Username,
-			),
+			)),
 			StatusCode: resp.StatusCode,
 		})
 		return
@@ -1605,8 +1599,8 @@ func (p *Plugin) updateIssue(c *UserContext, w http.ResponseWriter, r *http.Requ
 		p.API.SendEphemeralPost(c.UserID, reply)
 	}
 	if appErr != nil {
-		c.Log.WithError(appErr).Warnf("failed to create notification post")
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to create notification post, postID: " + issue.PostID + ", channelID: " + channelID, StatusCode: http.StatusInternalServerError})
+		c.Log.WithError(appErr).Warnf("failed to create the notification post")
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to create the notification post, postID: %s, channelID: %s", issue.PostID, channelID), StatusCode: http.StatusInternalServerError})
 		return
 	}
 
@@ -1614,7 +1608,7 @@ func (p *Plugin) updateIssue(c *UserContext, w http.ResponseWriter, r *http.Requ
 	p.writeJSON(w, result)
 }
 
-func (p *Plugin) CreateCommentToIssue(c *UserContext, w http.ResponseWriter, comment, owner, repo string, post *model.Post, numberInt int) {
+func (p *Plugin) CreateCommentToIssue(c *UserContext, w http.ResponseWriter, comment, owner, repo string, post *model.Post, issueNumber int) {
 	currentUsername := c.GHInfo.GitHubUsername
 	permalink := p.getPermaLink(post.Id)
 	issueComment := &github.IssueComment{
@@ -1622,13 +1616,13 @@ func (p *Plugin) CreateCommentToIssue(c *UserContext, w http.ResponseWriter, com
 	}
 	githubClient := p.githubConnectUser(c.Context.Ctx, c.GHInfo)
 
-	result, rawResponse, err := githubClient.Issues.CreateComment(c.Ctx, owner, repo, numberInt, issueComment)
+	result, rawResponse, err := githubClient.Issues.CreateComment(c.Ctx, owner, repo, issueNumber, issueComment)
 	if err != nil {
 		statusCode := 500
 		if rawResponse != nil {
 			statusCode = rawResponse.StatusCode
 		}
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to create an issue comment: " + getFailReason(statusCode, repo, currentUsername), StatusCode: statusCode})
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to create an issue comment: %s", getFailReason(statusCode, repo, currentUsername)), StatusCode: statusCode})
 		return
 	}
 	rootID := post.Id
@@ -1636,7 +1630,7 @@ func (p *Plugin) CreateCommentToIssue(c *UserContext, w http.ResponseWriter, com
 		// the original post was a reply
 		rootID = post.RootId
 	}
-	permalinkReplyMessage := fmt.Sprintf("[Comment](%v) attached to GitHub issue [#%v](%v)", permalink, numberInt, result.GetHTMLURL())
+	permalinkReplyMessage := fmt.Sprintf("[Comment](%v) attached to GitHub issue [#%v](%v)", permalink, issueNumber, result.GetHTMLURL())
 	reply := &model.Post{
 		Message:   permalinkReplyMessage,
 		ChannelId: post.ChannelId,
@@ -1646,20 +1640,20 @@ func (p *Plugin) CreateCommentToIssue(c *UserContext, w http.ResponseWriter, com
 
 	_, appErr := p.API.CreatePost(reply)
 	if appErr != nil {
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to create notification post " + post.Id, StatusCode: http.StatusInternalServerError})
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to create the notification post %s", post.Id), StatusCode: http.StatusInternalServerError})
 		return
 	}
 }
 
-func (p *Plugin) CloseOrReopenIssue(c *UserContext, w http.ResponseWriter, status string, statusReason string, owner string, repo string, post *model.Post, numberInt int) {
+func (p *Plugin) CloseOrReopenIssue(c *UserContext, w http.ResponseWriter, status, statusReason, owner, repo string, post *model.Post, issueNumber int) {
 	currentUsername := c.GHInfo.GitHubUsername
 	githubClient := p.githubConnectUser(c.Context.Ctx, c.GHInfo)
 	githubIssue := &github.IssueRequest{
 		State:       &(status),
-		StateReason: &statusReason,
+		StateReason: &(statusReason),
 	}
 
-	issue, resp, err := githubClient.Issues.Edit(c.Ctx, owner, repo, numberInt, githubIssue)
+	issue, resp, err := githubClient.Issues.Edit(c.Ctx, owner, repo, issueNumber, githubIssue)
 	if err != nil {
 		if resp != nil && resp.Response.StatusCode == http.StatusGone {
 			p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "Issues are disabled on this repository.", StatusCode: http.StatusMethodNotAllowed})
@@ -1669,22 +1663,23 @@ func (p *Plugin) CloseOrReopenIssue(c *UserContext, w http.ResponseWriter, statu
 		c.Log.WithError(err).Warnf("Failed to update the issue")
 		p.writeAPIError(w, &APIErrorResponse{
 			ID: "",
-			Message: "failed to update issue: " + getFailReason(resp.StatusCode,
+			Message: fmt.Sprintf("failed to update issue: %s", getFailReason(resp.StatusCode,
 				repo,
 				currentUsername,
-			),
+			)),
 			StatusCode: resp.StatusCode,
 		})
 		return
 	}
+
 	var permalinkReplyMessage string
 	switch statusReason {
 	case "completed":
-		permalinkReplyMessage = fmt.Sprintf("Issue closed as not completed [#%v](%v)", numberInt, issue.GetHTMLURL())
+		permalinkReplyMessage = fmt.Sprintf("Issue closed as not completed [#%v](%v)", issueNumber, issue.GetHTMLURL())
 	case "not_planned":
-		permalinkReplyMessage = fmt.Sprintf("Issue closed as not planned [#%v](%v)", numberInt, issue.GetHTMLURL())
+		permalinkReplyMessage = fmt.Sprintf("Issue closed as not planned [#%v](%v)", issueNumber, issue.GetHTMLURL())
 	default:
-		permalinkReplyMessage = fmt.Sprintf("Issue reopend [#%v](%v)", numberInt, issue.GetHTMLURL())
+		permalinkReplyMessage = fmt.Sprintf("Issue reopend [#%v](%v)", issueNumber, issue.GetHTMLURL())
 	}
 
 	rootID := post.Id
@@ -1699,9 +1694,8 @@ func (p *Plugin) CloseOrReopenIssue(c *UserContext, w http.ResponseWriter, statu
 		UserId:    c.UserID,
 	}
 
-	_, appErr := p.API.CreatePost(reply)
-	if appErr != nil {
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to create notification post " + post.Id, StatusCode: http.StatusInternalServerError})
+	if _, appErr := p.API.CreatePost(reply); appErr != nil {
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to create the notification post %s", post.Id), StatusCode: http.StatusInternalServerError})
 		return
 	}
 	if status == actionClosed {
@@ -1709,8 +1703,8 @@ func (p *Plugin) CloseOrReopenIssue(c *UserContext, w http.ResponseWriter, statu
 	} else {
 		post.Props[IssueStatus] = Close
 	}
-	if _, appErr = p.API.UpdatePost(post); appErr != nil {
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to update post " + post.Id, StatusCode: http.StatusInternalServerError})
+	if _, appErr := p.API.UpdatePost(post); appErr != nil {
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to update the post %s", post.Id), StatusCode: http.StatusInternalServerError})
 	}
 	p.writeJSON(w, issue)
 }
@@ -1722,7 +1716,7 @@ func (p *Plugin) closeOrReopenIssue(c *UserContext, w http.ResponseWriter, r *ht
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "Please provide a valid JSON object.", StatusCode: http.StatusBadRequest})
 		return
 	}
-	numberInt, err := strconv.Atoi(req.Number)
+	issueNumber, err := strconv.Atoi(req.Number)
 	if err != nil {
 		p.writeAPIError(w, &APIErrorResponse{Message: "Invalid param 'number'.", StatusCode: http.StatusBadRequest})
 		return
@@ -1738,25 +1732,24 @@ func (p *Plugin) closeOrReopenIssue(c *UserContext, w http.ResponseWriter, r *ht
 		return
 	}
 
-	_, err = p.getUsername(post.UserId)
-	if err != nil {
+	if _, err = p.getUsername(post.UserId); err != nil {
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to get username", StatusCode: http.StatusInternalServerError})
 		return
 	}
 	if req.IssueComment != "" {
-		p.CreateCommentToIssue(c, w, req.IssueComment, req.Owner, req.Repository, post, numberInt)
+		p.CreateCommentToIssue(c, w, req.IssueComment, req.Owner, req.Repository, post, issueNumber)
 	}
 
 	if req.Status == Close {
-		p.CloseOrReopenIssue(c, w, "closed", req.StatusReason, req.Owner, req.Repository, post, numberInt)
+		p.CloseOrReopenIssue(c, w, "closed", req.StatusReason, req.Owner, req.Repository, post, issueNumber)
 	} else {
-		p.CloseOrReopenIssue(c, w, "open", req.StatusReason, req.Owner, req.Repository, post, numberInt)
+		p.CloseOrReopenIssue(c, w, "open", req.StatusReason, req.Owner, req.Repository, post, issueNumber)
 	}
 }
 
 func (p *Plugin) createIssue(c *UserContext, w http.ResponseWriter, r *http.Request) {
-	// get data for the issue from the request body and fill IssueRequestToCreate object so that we can create the issue
-	issue := &IssueRequestToCreate{}
+	// get data for the issue from the request body and fill CreateIssueRequest object to create the issue
+	issue := &CreateIssueRequest{}
 	if err := json.NewDecoder(r.Body).Decode(&issue); err != nil {
 		c.Log.WithError(err).Warnf("Error decoding the JSON body")
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "Please provide a valid JSON object.", StatusCode: http.StatusBadRequest})
@@ -1769,7 +1762,7 @@ func (p *Plugin) createIssue(c *UserContext, w http.ResponseWriter, r *http.Requ
 	}
 
 	if issue.Repo == "" {
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "Please provide a valid repo name.", StatusCode: http.StatusBadRequest})
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "Please provide a valid repository name.", StatusCode: http.StatusBadRequest})
 		return
 	}
 
@@ -1820,7 +1813,7 @@ func (p *Plugin) createIssue(c *UserContext, w http.ResponseWriter, r *http.Requ
 	if githubIssue.GetBody() != "" && mmMessage != "" {
 		mmMessage = "\n\n" + mmMessage
 	}
-	*githubIssue.Body = githubIssue.GetBody() + mmMessage
+	*githubIssue.Body = fmt.Sprintf("%s%s", githubIssue.GetBody(), mmMessage)
 
 	currentUser, appErr := p.API.GetUser(c.UserID)
 	if appErr != nil {
@@ -1842,11 +1835,8 @@ func (p *Plugin) createIssue(c *UserContext, w http.ResponseWriter, r *http.Requ
 
 		c.Log.WithError(err).Warnf("Failed to create issue")
 		p.writeAPIError(w, &APIErrorResponse{
-			ID: "",
-			Message: "failed to create issue: " + getFailReason(resp.StatusCode,
-				issue.Repo,
-				currentUser.Username,
-			),
+			ID:         "",
+			Message:    fmt.Sprintf("failed to create issue: %s", getFailReason(resp.StatusCode, issue.Repo, currentUser.Username)),
 			StatusCode: resp.StatusCode,
 		})
 		return
@@ -1876,8 +1866,8 @@ func (p *Plugin) createIssue(c *UserContext, w http.ResponseWriter, r *http.Requ
 		p.API.SendEphemeralPost(c.UserID, reply)
 	}
 	if appErr != nil {
-		c.Log.WithError(appErr).Warnf("failed to create notification post")
-		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: "failed to create notification post, postID: " + issue.PostID + ", channelID: " + channelID, StatusCode: http.StatusInternalServerError})
+		c.Log.WithError(appErr).Warnf("failed to create the notification post")
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to create the notification post, postID: %s, channelID: %s", issue.PostID, channelID), StatusCode: http.StatusInternalServerError})
 		return
 	}
 

@@ -4,14 +4,14 @@ import AttachCommentToIssuePostMenuAction from 'components/post_menu_actions/att
 import AttachCommentToIssueModal from 'components/modals/attach_comment_to_issue';
 
 import CreateOrUpdateIssueModal from './components/modals/create_update_issue';
-import CloseOrReopenIssueModal from './components/modals/close_reopen_issue';
+import CloseOrReopenIssueModal from './components/modals/close_reopen_issue/close_reopen_issue.tsx';
 import CreateIssuePostMenuAction from './components/post_menu_action/create_issue';
 import SidebarHeader from './components/sidebar_header';
 import TeamSidebar from './components/team_sidebar';
 import UserAttribute from './components/user_attribute';
 import SidebarRight from './components/sidebar_right';
 import LinkTooltip from './components/link_tooltip';
-import GithubIssue from './components/github_issue';
+import GithubIssue from './components/github_issue/github_issue.tsx';
 import Reducer from './reducers';
 import Client from './client';
 import {getConnected, setShowRHSAction} from './actions';

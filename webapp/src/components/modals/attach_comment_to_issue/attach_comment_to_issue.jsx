@@ -23,12 +23,10 @@ export default class AttachIssueModal extends PureComponent {
     static propTypes = {
         close: PropTypes.func.isRequired,
         create: PropTypes.func.isRequired,
-        post: PropTypes.object.isRequired,
+        post: PropTypes.object,
         theme: PropTypes.object.isRequired,
         visible: PropTypes.bool.isRequired,
-        owner: PropTypes.string,
-        repo: PropTypes.string,
-        number: PropTypes.string,
+        messageData: PropTypes.object,
     };
 
     constructor(props) {
@@ -43,9 +41,9 @@ export default class AttachIssueModal extends PureComponent {
 
         if (!this.state.issueValue) {
             const issue = {
-                owner: this.props.owner,
-                repo: this.props.repo,
-                number: this.props.number,
+                owner: this.props.messageData.owner,
+                repo: this.props.messageData.repo,
+                number: this.props.messageData.number,
                 comment: this.state.comment,
                 post_id: this.props.post.id,
                 show_attached_message: false,
@@ -111,7 +109,7 @@ export default class AttachIssueModal extends PureComponent {
         const {visible, theme} = this.props;
         const {error, submitting} = this.state;
         const style = getStyle(theme);
-        const modalTitle = this.props.number ? 'Create a comment to GitHub Issue' : 'Attach Message to GitHub Issue';
+        const modalTitle = this.props.messageData?.number ? 'Create a comment to GitHub Issue' : 'Attach Message to GitHub Issue';
 
         if (!visible) {
             return null;
@@ -137,7 +135,7 @@ export default class AttachIssueModal extends PureComponent {
                 />
             </div>
         );
-        if (this.props.number) {
+        if (this.props.messageData?.number) {
             component = (
                 <div>
                     <Input

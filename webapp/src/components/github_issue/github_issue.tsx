@@ -1,13 +1,24 @@
+import * as React from 'react';
 import {makeStyleFromTheme} from 'mattermost-redux/utils/theme_utils';
-import PropTypes from 'prop-types';
+import {Theme} from 'mattermost-redux/types/preferences';
+import {Post} from 'mattermost-redux/types/posts';
+import {useDispatch} from 'react-redux';
 
-const GithubIssue = (props) => {
+import {attachCommentIssueModal, editIssueModal, closeOrReopenIssueModal} from '../../actions';
+
+type GithubIssueProps = {
+    theme: Theme,
+    post: Post,
+}
+
+const GithubIssue = (props: GithubIssueProps) => {
     const style = getStyle(props.theme);
     const post = props.post;
     const postProps = post.props || {};
     let assignees;
     let labels;
     let buttonClassName = 'btn btn-primary';
+    const dispatch = useDispatch();
 
     const updateStyleForCloseOrReopenButton = () => {
         if (postProps.status === 'Close') {
@@ -24,21 +35,21 @@ const GithubIssue = (props) => {
                     style={{...style.button, ...style.other_buttons}}
                     className='btn btn-primary'
                     onClick={() => {
-                        props.actions.attachCommentIssueModal(postProps.repo_owner, postProps.repo_name, postProps.issue_number, post.id);
+                        dispatch(attachCommentIssueModal(postProps.repo_owner, postProps.repo_name, postProps.issue_number, post.id));
                     }}
                 >{'Comment'}</button>
                 <button
                     style={{...style.button, ...style.other_buttons}}
                     className='btn btn-primary'
                     onClick={() => {
-                        props.actions.editIssueModal(postProps.repo_owner, postProps.repo_name, postProps.issue_number, post.id);
+                        dispatch(editIssueModal(postProps.repo_owner, postProps.repo_name, postProps.issue_number, post.id));
                     }}
                 >{'Edit'}</button>
                 <button
                     style={{...style.button, ...updateStyleForCloseOrReopenButton()}}
                     className={buttonClassName}
                     onClick={() => {
-                        props.actions.closeOrReopenIssueModal(postProps.repo_owner, postProps.repo_name, postProps.issue_number, postProps.status, post.id);
+                        dispatch(closeOrReopenIssueModal(postProps.repo_owner, postProps.repo_name, postProps.issue_number, postProps.status, post.id));
                     }}
                 >{postProps.status}</button>
             </div>
@@ -49,7 +60,7 @@ const GithubIssue = (props) => {
             <div style={style.assignees_and_labels}>
                 <b>{'Assignees'}</b>
                 <div>
-                    {postProps.assignees?.map((assignee, index) => (
+                    {postProps.assignees?.map((assignee: string, index: number) => (
                         <span key={assignee}>{(index ? ', ' : '') + assignee} </span>
                     ))}
                 </div>
@@ -61,7 +72,7 @@ const GithubIssue = (props) => {
             <div style={style.assignees_and_labels}>
                 <b>{'Labels'}</b>
                 <div>
-                    {postProps.labels?.map((label, index) => (
+                    {postProps.labels?.map((label: string, index: number) => (
                         <span key={label}>{(index ? ', ' : '') + label} </span>
                     ))}
                 </div>
@@ -107,11 +118,5 @@ const getStyle = makeStyleFromTheme((theme) => {
         },
     };
 });
-
-GithubIssue.propTypes = {
-    theme: PropTypes.object.isRequired,
-    post: PropTypes.object,
-    actions: PropTypes.object.isRequired,
-};
 
 export default GithubIssue;
