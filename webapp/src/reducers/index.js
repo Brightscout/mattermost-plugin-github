@@ -220,15 +220,7 @@ const createOrUpdateIssueModal = (state = '', action) => {
         return {
             ...state,
             postId: action.data.postId,
-            title: action.data.title,
-            milestoneTitle: action.data.milestoneTitle,
-            milestoneNumber: action.data.milestoneNumber,
-            issueNumber: action.data.issueNumber,
-            labels: action.data.labels,
-            assignees: action.data.assignees,
-            description: action.data.description,
-            repoName: action.data.repoName,
-            channelId: action.data.channelId,
+            messageData: action.data.messageData,
         };
     case ActionTypes.CLOSE_CREATE_OR_UPDATE_ISSUE_MODAL:
         return {};

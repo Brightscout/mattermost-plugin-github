@@ -11,21 +11,14 @@ import {closeCreateOrUpdateIssueModal, createIssue, updateIssue} from 'actions';
 import CreateOrUpdateIssueModal from './create_update_issue';
 
 const mapStateToProps = (state) => {
-    const {postId, title, milestoneTitle, milestoneNumber, issueNumber, labels, assignees, description, repoName, channelId} = state[`plugins-${pluginId}`].createOrUpdateIssueModal;
-    const post = (postId) ? getPost(state, postId) : null;
+    const {postId, messageData} = state[`plugins-${pluginId}`].createOrUpdateIssueModal;
+    const currentPostId = postId || messageData?.postId;
+    const post = currentPostId ? getPost(state, currentPostId) : null;
 
     return {
         visible: state[`plugins-${pluginId}`].isCreateOrUpdateIssueModalVisible,
         post,
-        title,
-        milestoneTitle,
-        milestoneNumber,
-        issueNumber,
-        labels,
-        assignees,
-        description,
-        repoName,
-        channelId,
+        messageData,
     };
 };
 

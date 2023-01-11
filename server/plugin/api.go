@@ -47,6 +47,9 @@ const (
 
 	Close  = "Close"
 	Reopen = "Reopen"
+
+	IssueCompleted  = "completed"
+	IssueNotPlanned = "not_planned"
 )
 
 type OAuthState struct {
@@ -1566,7 +1569,7 @@ func (p *Plugin) updateIssue(c *UserContext, w http.ResponseWriter, r *http.Requ
 		c.Log.WithError(err).Warnf("Failed to update the issue")
 		p.writeAPIError(w, &APIErrorResponse{
 			ID: "",
-			Message: fmt.Sprintf("failed to update issue: %s", getFailReason(resp.StatusCode,
+			Message: fmt.Sprintf("failed to update the issue: %s", getFailReason(resp.StatusCode,
 				issue.Repo,
 				currentUser.Username,
 			)),
@@ -1638,8 +1641,7 @@ func (p *Plugin) CreateCommentToIssue(c *UserContext, w http.ResponseWriter, com
 		UserId:    c.UserID,
 	}
 
-	_, appErr := p.API.CreatePost(reply)
-	if appErr != nil {
+	if _, appErr := p.API.CreatePost(reply); appErr != nil {
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to create the notification post %s", post.Id), StatusCode: http.StatusInternalServerError})
 		return
 	}
@@ -1663,7 +1665,7 @@ func (p *Plugin) CloseOrReopenIssue(c *UserContext, w http.ResponseWriter, statu
 		c.Log.WithError(err).Warnf("Failed to update the issue")
 		p.writeAPIError(w, &APIErrorResponse{
 			ID: "",
-			Message: fmt.Sprintf("failed to update issue: %s", getFailReason(resp.StatusCode,
+			Message: fmt.Sprintf("failed to update the issue: %s", getFailReason(resp.StatusCode,
 				repo,
 				currentUsername,
 			)),
@@ -1674,9 +1676,9 @@ func (p *Plugin) CloseOrReopenIssue(c *UserContext, w http.ResponseWriter, statu
 
 	var permalinkReplyMessage string
 	switch statusReason {
-	case "completed":
-		permalinkReplyMessage = fmt.Sprintf("Issue closed as not completed [#%v](%v)", issueNumber, issue.GetHTMLURL())
-	case "not_planned":
+	case IssueCompleted:
+		permalinkReplyMessage = fmt.Sprintf("Issue closed as completed [#%v](%v)", issueNumber, issue.GetHTMLURL())
+	case IssueNotPlanned:
 		permalinkReplyMessage = fmt.Sprintf("Issue closed as not planned [#%v](%v)", issueNumber, issue.GetHTMLURL())
 	default:
 		permalinkReplyMessage = fmt.Sprintf("Issue reopend [#%v](%v)", issueNumber, issue.GetHTMLURL())

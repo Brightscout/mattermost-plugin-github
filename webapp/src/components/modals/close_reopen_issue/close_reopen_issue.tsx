@@ -20,7 +20,7 @@ const CloseOrReopenIssueModal = ({theme}: {theme: Theme}) => {
     const closeOrReopenIssueModalData = useSelector(getCloseOrReopenIssueModalData);
     const messageData = closeOrReopenIssueModalData.messageData;
     const visible = closeOrReopenIssueModalData.visible;
-    const [statusReason, setStatusReason] = useState(messageData?.status === 'Close' ? 'reopened' : 'completed');
+    const [statusReason, setStatusReason] = useState('completed');
     const [submitting, setSubmitting] = useState(false);
     const [comment, setComment] = useState('');
     if (!visible) {
@@ -31,10 +31,12 @@ const CloseOrReopenIssueModal = ({theme}: {theme: Theme}) => {
         if (e && e.preventDefault) {
             e.preventDefault();
         }
+
+        const currentStatus = messageData?.status === 'Close' ? statusReason : 'reopened';
         const issue = {
             channel_id: messageData.channel_id,
             issue_comment: comment,
-            status_reason: statusReason,
+            status_reason: currentStatus,
             repo: messageData.repo,
             number: messageData.number,
             owner: messageData.owner,

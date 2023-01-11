@@ -402,20 +402,11 @@ export function openCreateIssueModalWithPost(postId) {
     };
 }
 
-export function openCreateOrUpdateIssueModal(title, milestoneTitle, milestoneNumber, issueNumber, labels, assignees, description, repoName, channelId, postId) {
+export function openCreateOrUpdateIssueModal(messageData) {
     return {
         type: ActionTypes.OPEN_CREATE_OR_UPDATE_ISSUE_MODAL,
         data: {
-            title,
-            milestoneTitle,
-            milestoneNumber,
-            issueNumber,
-            labels,
-            assignees,
-            description,
-            repoName,
-            channelId,
-            postId,
+            messageData,
         },
     };
 }

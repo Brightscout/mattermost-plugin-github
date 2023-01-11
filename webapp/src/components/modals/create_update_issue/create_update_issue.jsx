@@ -35,17 +35,9 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
         close: PropTypes.func.isRequired,
         create: PropTypes.func.isRequired,
         post: PropTypes.object,
-        title: PropTypes.string,
-        channelId: PropTypes.string,
         theme: PropTypes.object.isRequired,
         visible: PropTypes.bool.isRequired,
-        repoName: PropTypes.string,
-        milestoneNumber: PropTypes.int,
-        milestoneTitle: PropTypes.string,
-        issueNumber: PropTypes.int,
-        description: PropTypes.string,
-        labels: PropTypes.array,
-        assignees: PropTypes.array,
+        messageData: PropTypes.object,
     };
 
     constructor(props) {
@@ -54,28 +46,32 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
         this.validator = new Validator();
     }
 
+    /* eslint-disable react/no-did-update-set-state*/
     componentDidUpdate(prevProps) {
-        if (this.props.post && !prevProps.post && !this.props.title) {
-            this.setState({issueDescription: this.props.post.message}); //eslint-disable-line react/no-did-update-set-state
-        } else if (this.props.channelId && (this.props.channelId !== prevProps.channelId || this.props.title !== prevProps.title || this.props.description !== prevProps.description || this.props.assignees !== prevProps.assignees || this.props.labels !== prevProps.labels || this.props.milestoneTitle !== prevProps.milestoneTitle || this.props.milestoneNumber !== prevProps.milestoneNumber)) {
-            if (this.props.assignees) {
-                this.setState({assignees: this.props.assignees}); // eslint-disable-line react/no-did-update-set-state
+        const data = this.props.messageData;
+        if (this.props.post && !prevProps.post && !data?.title) {
+            this.setState({issueDescription: this.props.post.message});
+        } else if (data?.channel_id && (data?.channel_id !== prevProps.messageData?.channel_id || data?.title !== prevProps.messageData?.title || data?.description !== prevProps.messageData?.description || data?.assignees !== prevProps.messageData?.assignees || data?.labels !== prevProps.messageData?.labels || data?.milestone_title !== prevProps.messageData?.milestone_title || data?.milestone_number !== prevProps.messageData?.milestone_number)) {
+            if (data?.assignees) {
+                this.setState({assignees: data?.assignees});
             }
-            if (this.props.labels) {
-                this.setState({labels: this.props.labels}); // eslint-disable-line react/no-did-update-set-state
+            if (data?.labels) {
+                this.setState({labels: data?.labels});
             }
-            this.setState({milestone: { // eslint-disable-line react/no-did-update-set-state
-                value: this.props.milestoneNumber,
-                label: this.props.milestoneTitle,
+            this.setState({milestone: {
+                value: data?.milestone_number,
+                label: data?.milestone_title,
             }});
-            this.setState({issueDescription: this.props.description}); // eslint-disable-line react/no-did-update-set-state
-            this.setState({repo: this.props.repoName}); // eslint-disable-line react/no-did-update-set-state
-            this.setState({issueTitle: this.props.title.substring(0, MAX_TITLE_LENGTH)}); // eslint-disable-line react/no-did-update-set-state
+            this.setState({issueDescription: data?.description});
+            this.setState({repo: data?.repo_full_name});
+            this.setState({issueTitle: data?.title.substring(0, MAX_TITLE_LENGTH)});
         }
     }
+    /* eslint-enable */
 
     // handle issue creation after form is populated
     handleCreate = async (e) => {
+        const data = this.props.messageData;
         if (e && e.preventDefault) {
             e.preventDefault();
         }
@@ -99,15 +95,15 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
             assignees: this.state.assignees,
             milestone: this.state.milestone && this.state.milestone.value,
             post_id: postId,
-            channel_id: this.props.channelId,
-            issue_number: this.props.issueNumber,
+            channel_id: data?.channel_id,
+            issue_number: data?.issue_number,
         };
 
         if (!issue.repo) {
             issue.repo = this.state.repo;
         }
         this.setState({submitting: true});
-        if (this.props.repoName) {
+        if (data?.repo_full_name) {
             const updated = await this.props.update(issue);
             if (updated.error) {
                 const errMessage = getErrorMessage(updated.error.message);
@@ -195,7 +191,8 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
         const theme = this.props.theme;
         const {error, submitting} = this.state;
         const style = getStyle(theme);
-        const modalTitle = this.props.repoName ? 'Update GitHub Issue' : 'Create GitHub Issue';
+        const data = this.props.messageData;
+        const modalTitle = data?.repo_full_name ? 'Update GitHub Issue' : 'Create GitHub Issue';
 
         const requiredMsg = 'This field is required.';
         let issueTitleValidationError = null;
@@ -249,7 +246,7 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
                 />
             </div>
         );
-        if (this.props.repoName) {
+        if (data?.repo_full_name) {
             component = (
                 <div>
                     <Input
@@ -257,7 +254,7 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
                         type='input'
                         required={true}
                         disabled={true}
-                        value={this.props.repoName}
+                        value={data?.repo_full_name}
                     />
 
                     <Input
