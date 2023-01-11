@@ -48,30 +48,33 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
 
     /* eslint-disable react/no-did-update-set-state*/
     componentDidUpdate(prevProps) {
-        const data = this.props.messageData;
-        if (this.props.post && !prevProps.post && !data?.title) {
+        if (!this.props.messageData) {
+            return;
+        }
+        const {channel_id, title, description, assignees, labels, milestone_title, milestone_number, repo_full_name} = this.props.messageData;
+        if (this.props.post && !prevProps.post && !title) {
             this.setState({issueDescription: this.props.post.message});
-        } else if (data?.channel_id && (data?.channel_id !== prevProps.messageData?.channel_id || data?.title !== prevProps.messageData?.title || data?.description !== prevProps.messageData?.description || data?.assignees !== prevProps.messageData?.assignees || data?.labels !== prevProps.messageData?.labels || data?.milestone_title !== prevProps.messageData?.milestone_title || data?.milestone_number !== prevProps.messageData?.milestone_number)) {
-            if (data?.assignees) {
-                this.setState({assignees: data?.assignees});
+        } else if (channel_id && (channel_id !== prevProps.messageData?.channel_id || title !== prevProps.messageData?.title || description !== prevProps.messageData?.description || assignees !== prevProps.messageData?.assignees || labels !== prevProps.messageData?.labels || milestone_title !== prevProps.messageData?.milestone_title || milestone_number !== prevProps.messageData?.milestone_number)) {
+            if (assignees) {
+                this.setState({assignees});
             }
-            if (data?.labels) {
-                this.setState({labels: data?.labels});
+            if (labels) {
+                this.setState({labels});
             }
             this.setState({milestone: {
-                value: data?.milestone_number,
-                label: data?.milestone_title,
+                value: milestone_number,
+                label: milestone_title,
             }});
-            this.setState({issueDescription: data?.description});
-            this.setState({repo: data?.repo_full_name});
-            this.setState({issueTitle: data?.title.substring(0, MAX_TITLE_LENGTH)});
+            this.setState({issueDescription: description});
+            this.setState({repo: repo_full_name});
+            this.setState({issueTitle: title.substring(0, MAX_TITLE_LENGTH)});
         }
     }
     /* eslint-enable */
 
     // handle issue creation after form is populated
     handleCreate = async (e) => {
-        const data = this.props.messageData;
+        const {channel_id, issue_number, repo_full_name} = this.props.messageData;
         if (e && e.preventDefault) {
             e.preventDefault();
         }
@@ -95,15 +98,15 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
             assignees: this.state.assignees,
             milestone: this.state.milestone && this.state.milestone.value,
             post_id: postId,
-            channel_id: data?.channel_id,
-            issue_number: data?.issue_number,
+            channel_id,
+            issue_number,
         };
 
         if (!issue.repo) {
             issue.repo = this.state.repo;
         }
         this.setState({submitting: true});
-        if (data?.repo_full_name) {
+        if (repo_full_name) {
             const updated = await this.props.update(issue);
             if (updated.error) {
                 const errMessage = getErrorMessage(updated.error.message);
@@ -191,8 +194,8 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
         const theme = this.props.theme;
         const {error, submitting} = this.state;
         const style = getStyle(theme);
-        const data = this.props.messageData;
-        const modalTitle = data?.repo_full_name ? 'Update GitHub Issue' : 'Create GitHub Issue';
+        const {repo_full_name} = this.props.messageData;
+        const modalTitle = repo_full_name ? 'Update GitHub Issue' : 'Create GitHub Issue';
 
         const requiredMsg = 'This field is required.';
         let issueTitleValidationError = null;
@@ -246,7 +249,7 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
                 />
             </div>
         );
-        if (data?.repo_full_name) {
+        if (repo_full_name) {
             component = (
                 <div>
                     <Input
@@ -254,7 +257,7 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
                         type='input'
                         required={true}
                         disabled={true}
-                        value={data?.repo_full_name}
+                        value={repo_full_name}
                     />
 
                     <Input

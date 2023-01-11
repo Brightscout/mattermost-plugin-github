@@ -35,16 +35,16 @@ export default class AttachIssueModal extends PureComponent {
     }
 
     handleCreate = (e) => {
-        const data = this.props.messageData;
         if (e && e.preventDefault) {
             e.preventDefault();
         }
 
         if (!this.state.issueValue) {
+            const {owner, repo, number} = this.props.messageData;
             const issue = {
-                owner: data.owner,
-                repo: data.repo,
-                number: data.number,
+                owner,
+                repo,
+                number,
                 comment: this.state.comment,
                 post_id: this.props.post.id,
                 show_attached_message: false,
@@ -107,16 +107,15 @@ export default class AttachIssueModal extends PureComponent {
     };
 
     render() {
-        const data = this.props.messageData;
-        const {visible, theme} = this.props;
         const {error, submitting} = this.state;
+        const {visible, theme} = this.props;
         const style = getStyle(theme);
-        const modalTitle = data?.number ? 'Create a comment to GitHub Issue' : 'Attach Message to GitHub Issue';
-
         if (!visible) {
             return null;
         }
 
+        const {number} = this.props.messageData;
+        const modalTitle = number ? 'Create a comment to GitHub Issue' : 'Attach Message to GitHub Issue';
         let component = (
             <div>
                 <GithubIssueSelector
@@ -137,7 +136,7 @@ export default class AttachIssueModal extends PureComponent {
                 />
             </div>
         );
-        if (data?.number) {
+        if (number) {
             component = (
                 <div>
                     <Input
