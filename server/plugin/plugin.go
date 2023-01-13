@@ -134,8 +134,8 @@ func NewPlugin() *Plugin {
 			}
 		}
 	}
-	p.emojiMap = githubEmojiMap
 
+	p.emojiMap = githubEmojiMap
 	return p
 }
 
@@ -289,7 +289,7 @@ func (p *Plugin) getPostPropsForReaction(reaction *model.Reaction) (orgRepo []st
 
 	orgRepo = strings.Split(repo, "/")
 	if len(orgRepo) != 2 {
-		p.API.LogError("Invalid orgainsation repository")
+		p.API.LogError("Invalid organisation repository")
 		return orgRepo, id, objectType, false
 	}
 
@@ -324,8 +324,8 @@ func (p *Plugin) ReactionHasBeenAdded(c *plugin.Context, reaction *model.Reactio
 		}
 		return
 	}
-	ghClient := p.githubConnectUser(context.Background(), info)
 
+	ghClient := p.githubConnectUser(context.Background(), info)
 	switch objectType {
 	case githubObjectTypeIssueComment:
 		if _, _, err := ghClient.Reactions.CreateIssueCommentReaction(context.Background(), orgRepo[0], orgRepo[1], int64(id), githubEmoji); err != nil {
@@ -337,10 +337,9 @@ func (p *Plugin) ReactionHasBeenAdded(c *plugin.Context, reaction *model.Reactio
 			p.API.LogDebug("Error found while creating issue reaction", err)
 			return
 		}
-
 	case githubObjectTypePRReviewComment:
 		if _, _, err := ghClient.Reactions.CreatePullRequestCommentReaction(context.Background(), orgRepo[0], orgRepo[1], int64(id), githubEmoji); err != nil {
-			p.API.LogDebug("Error found while creating pr review comment reaction", err)
+			p.API.LogDebug("Error found while creating PR review comment reaction", err)
 			return
 		}
 	default:
@@ -366,8 +365,8 @@ func (p *Plugin) ReactionHasBeenRemoved(c *plugin.Context, reaction *model.React
 		}
 		return
 	}
-	ghClient := p.githubConnectUser(context.Background(), info)
 
+	ghClient := p.githubConnectUser(context.Background(), info)
 	switch objectType {
 	case githubObjectTypeIssueComment:
 		reactions, _, err := ghClient.Reactions.ListIssueCommentReactions(context.Background(), orgRepo[0], orgRepo[1], int64(id), &github.ListOptions{})
@@ -399,18 +398,17 @@ func (p *Plugin) ReactionHasBeenRemoved(c *plugin.Context, reaction *model.React
 				return
 			}
 		}
-
 	case githubObjectTypePRReviewComment:
 		reactions, _, err := ghClient.Reactions.ListPullRequestCommentReactions(context.Background(), orgRepo[0], orgRepo[1], int64(id), &github.ListOptions{})
 		if err != nil {
-			p.API.LogDebug("Error getting pr review comment reaction list", err)
+			p.API.LogDebug("Error getting PR review comment reaction list", err)
 			return
 		}
 
 		for _, reactionObj := range reactions {
 			if info.UserID == reaction.UserId && p.emojiMap[reaction.EmojiName] == reactionObj.GetContent() {
 				if _, err = ghClient.Reactions.DeletePullRequestCommentReaction(context.Background(), orgRepo[0], orgRepo[1], int64(id), reactionObj.GetID()); err != nil {
-					p.API.LogDebug("Error found while removing pr review comment reaction", "error", err.Error())
+					p.API.LogDebug("Error found while removing PR review comment reaction", "error", err.Error())
 				}
 				return
 			}
