@@ -113,16 +113,28 @@ func NewPlugin() *Plugin {
 		"issue":         p.handleIssue,
 	}
 
-	p.emojiMap = map[string]string{
-		"+1":       "+1",
-		"-1":       "-1",
-		"laughing": "laugh",
-		"confused": "confused",
-		"heart":    "heart",
-		"tada":     "hooray",
-		"rocket":   "rocket",
-		"eyes":     "eyes",
+	var baseGithubEmojiMap = map[string]string{
+		"+1":         "+1",
+		"-1":         "-1",
+		"thumbsup":   "+1",
+		"thumbsdown": "-1",
+		"laughing":   "laugh",
+		"confused":   "confused",
+		"heart":      "heart",
+		"tada":       "hooray",
+		"rocket":     "rocket",
+		"eyes":       "eyes",
 	}
+
+	var githubEmojiMap = map[string]string{}
+	for systemEmoji := range model.SystemEmojis {
+		for mmBase, ghBase := range baseGithubEmojiMap {
+			if strings.HasPrefix(systemEmoji, mmBase) {
+				githubEmojiMap[systemEmoji] = ghBase
+			}
+		}
+	}
+	p.emojiMap = githubEmojiMap
 
 	return p
 }
@@ -263,38 +275,76 @@ func (p *Plugin) OnDeactivate() error {
 	return nil
 }
 
+func (p *Plugin) getPostPropsForReaction(reaction *model.Reaction) (orgRepo []string, id float64, objectType string, ok bool) {
+	post, err := p.client.Post.GetPost(reaction.PostId)
+	if err != nil {
+		p.API.LogError("Error fetching post for reaction", "error", err.Error())
+		return orgRepo, id, objectType, false
+	}
+
+	repo, ok := post.GetProp(postPropGithubRepo).(string)
+	if !ok || repo == "" {
+		return orgRepo, id, objectType, false
+	}
+
+	orgRepo = strings.Split(repo, "/")
+	if len(orgRepo) != 2 {
+		p.API.LogError("Invalid orgainsation repository")
+		return orgRepo, id, objectType, false
+	}
+
+	id, ok = post.GetProp(postPropGithubObjectID).(float64)
+	if !ok || id == 0 {
+		return orgRepo, id, objectType, false
+	}
+
+	objectType, ok = post.GetProp(postPropGithubObjectType).(string)
+	if !ok || objectType == "" {
+		return orgRepo, id, objectType, false
+	}
+
+	return orgRepo, id, objectType, true
+}
+
 func (p *Plugin) ReactionHasBeenAdded(c *plugin.Context, reaction *model.Reaction) {
 	githubEmoji := p.emojiMap[reaction.EmojiName]
 	if githubEmoji == "" {
 		return
 	}
-	post, error := p.client.Post.GetPost(reaction.PostId)
-	if error != nil {
-		p.API.LogError("Invalid post id. Addition of reaction failed.")
+
+	orgRepo, id, objectType, ok := p.getPostPropsForReaction(reaction)
+	if !ok {
 		return
 	}
-
-	repo := post.GetProp("gh_repo")
-	if repo == nil {
-		p.API.LogDebug("Required prop is not present. This post is not created by this plugin, hence ignoring")
-		return
-	}
-
-	orgRepo := strings.Split(repo.(string), "/")
-	// strange that gh_object_id is always returned as float64, without type casting it throws an error
-	id := int(post.GetProp("gh_object_id").(float64))
 
 	info, appErr := p.getGitHubUserInfo(reaction.UserId)
 	if appErr != nil {
 		if appErr.ID != apiErrorIDNotConnected {
 			p.API.LogError("Error in getting user info", "error", appErr.Message)
 		}
+		return
 	}
 	ghClient := p.githubConnectUser(context.Background(), info)
 
-	_, _, error = ghClient.Reactions.CreateIssueCommentReaction(context.Background(), orgRepo[0], orgRepo[1], int64(id), githubEmoji)
-	if error != nil {
-		p.API.LogError("Error found while creating issue comment reaction", error)
+	switch objectType {
+	case githubObjectTypeIssueComment:
+		if _, _, err := ghClient.Reactions.CreateIssueCommentReaction(context.Background(), orgRepo[0], orgRepo[1], int64(id), githubEmoji); err != nil {
+			p.API.LogDebug("Error found while creating issue comment reaction", err)
+			return
+		}
+	case githubObjectTypeIssue:
+		if _, _, err := ghClient.Reactions.CreateIssueReaction(context.Background(), orgRepo[0], orgRepo[1], int(id), githubEmoji); err != nil {
+			p.API.LogDebug("Error found while creating issue reaction", err)
+			return
+		}
+
+	case githubObjectTypePRReviewComment:
+		if _, _, err := ghClient.Reactions.CreatePullRequestCommentReaction(context.Background(), orgRepo[0], orgRepo[1], int64(id), githubEmoji); err != nil {
+			p.API.LogDebug("Error found while creating pr review comment reaction", err)
+			return
+		}
+	default:
+		return
 	}
 }
 
@@ -303,43 +353,70 @@ func (p *Plugin) ReactionHasBeenRemoved(c *plugin.Context, reaction *model.React
 	if githubEmoji == "" {
 		return
 	}
-	post, error := p.client.Post.GetPost(reaction.PostId)
-	if error != nil {
-		p.API.LogError("Invalid post id. Removal of reaction failed.")
+
+	orgRepo, id, objectType, ok := p.getPostPropsForReaction(reaction)
+	if !ok {
 		return
 	}
-
-	repo := post.GetProp("gh_repo")
-	if repo == nil {
-		p.API.LogDebug("Required prop is not present. This post is not created by this plugin, hence ignoring")
-		return
-	}
-
-	orgRepo := strings.Split(repo.(string), "/")
-	// strange that gh_object_id is always returned as float64, without type casting it throws an error
-	id := int(post.GetProp("gh_object_id").(float64))
 
 	info, appErr := p.getGitHubUserInfo(reaction.UserId)
 	if appErr != nil {
 		if appErr.ID != apiErrorIDNotConnected {
 			p.API.LogError("Error in getting user info", "error", appErr.Message)
 		}
+		return
 	}
 	ghClient := p.githubConnectUser(context.Background(), info)
 
-	reactions, _, error := ghClient.Reactions.ListIssueCommentReactions(context.Background(), orgRepo[0], orgRepo[1], int64(id), &github.ListOptions{})
+	switch objectType {
+	case githubObjectTypeIssueComment:
+		reactions, _, err := ghClient.Reactions.ListIssueCommentReactions(context.Background(), orgRepo[0], orgRepo[1], int64(id), &github.ListOptions{})
+		if err != nil {
+			p.API.LogDebug("Error getting issue comment reaction list", err)
+			return
+		}
 
-	if error == nil {
 		for _, reactionObj := range reactions {
 			if info.UserID == reaction.UserId && p.emojiMap[reaction.EmojiName] == reactionObj.GetContent() {
-				// delete this reaction
-				_, error = ghClient.Reactions.DeleteIssueCommentReaction(context.Background(), orgRepo[0], orgRepo[1], int64(id), reactionObj.GetID())
-				if error != nil {
-					p.API.LogError("Error found while removing issue comment reaction")
+				if _, err = ghClient.Reactions.DeleteIssueCommentReaction(context.Background(), orgRepo[0], orgRepo[1], int64(id), reactionObj.GetID()); err != nil {
+					p.API.LogDebug("Error found while removing issue comment reaction", "error", err.Error())
 				}
 				return
 			}
 		}
+	case githubObjectTypeIssue:
+		reactions, _, err := ghClient.Reactions.ListIssueReactions(context.Background(), orgRepo[0], orgRepo[1], int(id), &github.ListOptions{})
+		if err != nil {
+			p.API.LogDebug("Error getting issue reaction list", err)
+			return
+		}
+
+		for _, reactionObj := range reactions {
+			if info.UserID == reaction.UserId && p.emojiMap[reaction.EmojiName] == reactionObj.GetContent() {
+				if _, err = ghClient.Reactions.DeleteIssueReaction(context.Background(), orgRepo[0], orgRepo[1], int(id), reactionObj.GetID()); err != nil {
+					p.API.LogDebug("Error found while removing issue reaction", "error", err.Error())
+				}
+				return
+			}
+		}
+
+	case githubObjectTypePRReviewComment:
+		reactions, _, err := ghClient.Reactions.ListPullRequestCommentReactions(context.Background(), orgRepo[0], orgRepo[1], int64(id), &github.ListOptions{})
+		if err != nil {
+			p.API.LogDebug("Error getting pr review comment reaction list", err)
+			return
+		}
+
+		for _, reactionObj := range reactions {
+			if info.UserID == reaction.UserId && p.emojiMap[reaction.EmojiName] == reactionObj.GetContent() {
+				if _, err = ghClient.Reactions.DeletePullRequestCommentReaction(context.Background(), orgRepo[0], orgRepo[1], int64(id), reactionObj.GetID()); err != nil {
+					p.API.LogDebug("Error found while removing pr review comment reaction", "error", err.Error())
+				}
+				return
+			}
+		}
+	default:
+		return
 	}
 }
 
