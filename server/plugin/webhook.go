@@ -925,7 +925,21 @@ func (p *Plugin) handleCommentMentionNotification(event *github.IssueCommentEven
 		Type:    "custom_git_mention",
 	}
 
+	assignees := event.GetIssue().Assignees
+
 	for _, username := range mentionedUsernames {
+		assigneeMentioned := false
+		for _, assignee := range assignees {
+			if username == *assignee.Login {
+				assigneeMentioned = true
+				break
+			}
+		}
+
+		if assigneeMentioned {
+			continue
+		}
+
 		// Don't notify user of their own comment
 		if username == event.GetSender().GetLogin() {
 			continue
@@ -1030,7 +1044,29 @@ func (p *Plugin) handleCommentAssigneeNotification(event *github.IssueCommentEve
 		return
 	}
 
+	mentionedUsernames := parseGitHubUsernamesFromText(event.GetComment().GetBody())
+
 	for _, assignee := range assignees {
+		usernameMentioned := false
+		for _, username := range mentionedUsernames {
+			if username == *assignee.Login {
+				usernameMentioned = true
+				break
+			}
+		}
+
+		if usernameMentioned {
+			switch splitURL[len(splitURL)-2] {
+			case "pull":
+				templateName = "commentAssigneeSelfMentionPullRequestNotification"
+			case "issues":
+				templateName = "commentAssigneeSelfMentionIssueNotification"
+			default:
+				p.API.LogWarn("Unhandled issue type", "type", splitURL[len(splitURL)-2])
+				return
+			}
+		}
+
 		userID := p.getGitHubToUserIDMapping(assignee.GetLogin())
 		if userID == "" {
 			continue

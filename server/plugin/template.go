@@ -304,6 +304,16 @@ Assignees: {{range $i, $el := .Assignees -}} {{- if $i}}, {{end}}{{template "use
 {{.GetComment.GetBody | trimBody | quote | replaceAllGitHubUsernames}}
 `))
 
+	template.Must(masterTemplate.New("commentAssigneeSelfMentionPullRequestNotification").Funcs(funcMap).Parse(`
+{{template "user" .GetSender}} mentioned on a pull request you are assigned to {{template "eventRepoIssueFullLinkWithTitle" .}}:
+{{.GetComment.GetBody | trimBody | quote | replaceAllGitHubUsernames}}
+`))
+
+	template.Must(masterTemplate.New("commentAssigneeSelfMentionIssueNotification").Funcs(funcMap).Parse(`
+{{template "user" .GetSender}} mentioned on a issue you are assigned to {{template "eventRepoIssueFullLinkWithTitle" .}}:
+{{.GetComment.GetBody | trimBody | quote | replaceAllGitHubUsernames}}
+`))
+
 	template.Must(masterTemplate.New("commentAuthorIssueNotification").Funcs(funcMap).Parse(`
 {{template "user" .GetSender}} commented on your issue {{template "eventRepoIssueFullLinkWithTitle" .}}:
 {{.GetComment.GetBody | trimBody | quote | replaceAllGitHubUsernames}}
