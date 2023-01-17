@@ -288,7 +288,7 @@ func (p *Plugin) getPostPropsForReaction(reaction *model.Reaction) (orgRepo []st
 
 	orgRepo = strings.Split(repo, "/")
 	if len(orgRepo) != 2 {
-		p.API.LogDebug("Invalid organisation repository")
+		p.API.LogDebug("Invalid organization repository")
 		return orgRepo, id, objectType, false
 	}
 
@@ -329,17 +329,17 @@ func (p *Plugin) ReactionHasBeenAdded(c *plugin.Context, reaction *model.Reactio
 	switch objectType {
 	case githubObjectTypeIssueComment:
 		if _, _, err := ghClient.Reactions.CreateIssueCommentReaction(context.Background(), owner, repo, int64(id), githubEmoji); err != nil {
-			p.API.LogDebug("Error found occurred creating issue comment reaction", "error", err.Error())
+			p.API.LogDebug("Error occurred while creating issue comment reaction", "error", err.Error())
 			return
 		}
 	case githubObjectTypeIssue:
 		if _, _, err := ghClient.Reactions.CreateIssueReaction(context.Background(), owner, repo, int(id), githubEmoji); err != nil {
-			p.API.LogDebug("Error found occurred creating issue reaction", "error", err.Error())
+			p.API.LogDebug("Error occurred while creating issue reaction", "error", err.Error())
 			return
 		}
 	case githubObjectTypePRReviewComment:
 		if _, _, err := ghClient.Reactions.CreatePullRequestCommentReaction(context.Background(), owner, repo, int64(id), githubEmoji); err != nil {
-			p.API.LogDebug("Error found occurred creating PR review comment reaction", "error", err.Error())
+			p.API.LogDebug("Error occurred while creating PR review comment reaction", "error", err.Error())
 			return
 		}
 	default:
