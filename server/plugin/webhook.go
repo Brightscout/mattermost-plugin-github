@@ -1033,14 +1033,15 @@ func (p *Plugin) handleCommentAssigneeNotification(event *github.IssueCommentEve
 	if len(splitURL) < 2 {
 		return
 	}
+	eventType := splitURL[len(splitURL)-2]
 	var templateName string
-	switch splitURL[len(splitURL)-2] {
+	switch eventType {
 	case "pull":
 		templateName = "commentAssigneePullRequestNotification"
 	case "issues":
 		templateName = "commentAssigneeIssueNotification"
 	default:
-		p.API.LogWarn("Unhandled issue type", "type", splitURL[len(splitURL)-2])
+		p.API.LogWarn("Unhandled issue type", "type", eventType)
 		return
 	}
 
@@ -1056,13 +1057,13 @@ func (p *Plugin) handleCommentAssigneeNotification(event *github.IssueCommentEve
 		}
 
 		if usernameMentioned {
-			switch splitURL[len(splitURL)-2] {
+			switch eventType {
 			case "pull":
 				templateName = "commentAssigneeSelfMentionPullRequestNotification"
 			case "issues":
 				templateName = "commentAssigneeSelfMentionIssueNotification"
 			default:
-				p.API.LogWarn("Unhandled issue type", "type", splitURL[len(splitURL)-2])
+				p.API.LogWarn("Unhandled issue type", "Type", eventType)
 				return
 			}
 		}

@@ -305,12 +305,12 @@ Assignees: {{range $i, $el := .Assignees -}} {{- if $i}}, {{end}}{{template "use
 `))
 
 	template.Must(masterTemplate.New("commentAssigneeSelfMentionPullRequestNotification").Funcs(funcMap).Parse(`
-{{template "user" .GetSender}} mentioned on a pull request you are assigned to {{template "eventRepoIssueFullLinkWithTitle" .}}:
+{{template "user" .GetSender}} mentioned you on a pull request that you are assigned to {{template "eventRepoIssueFullLinkWithTitle" .}}:
 {{.GetComment.GetBody | trimBody | quote | replaceAllGitHubUsernames}}
 `))
 
 	template.Must(masterTemplate.New("commentAssigneeSelfMentionIssueNotification").Funcs(funcMap).Parse(`
-{{template "user" .GetSender}} mentioned on a issue you are assigned to {{template "eventRepoIssueFullLinkWithTitle" .}}:
+{{template "user" .GetSender}} mentioned you on a issue that you are assigned to {{template "eventRepoIssueFullLinkWithTitle" .}}:
 {{.GetComment.GetBody | trimBody | quote | replaceAllGitHubUsernames}}
 `))
 
