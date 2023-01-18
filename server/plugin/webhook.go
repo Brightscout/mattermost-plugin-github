@@ -1041,7 +1041,7 @@ func (p *Plugin) handleCommentAssigneeNotification(event *github.IssueCommentEve
 	case "issues":
 		templateName = "commentAssigneeIssueNotification"
 	default:
-		p.API.LogWarn("Unhandled issue type", "type", eventType)
+		p.API.LogWarn("Unhandled issue type", "Type", eventType)
 		return
 	}
 
