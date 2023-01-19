@@ -1033,6 +1033,7 @@ func (p *Plugin) handleCommentAssigneeNotification(event *github.IssueCommentEve
 	if len(splitURL) < 2 {
 		return
 	}
+
 	eventType := splitURL[len(splitURL)-2]
 	var templateName string
 	switch eventType {
