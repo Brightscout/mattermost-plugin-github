@@ -959,24 +959,21 @@ func (p *Plugin) updateSettings(c *serializer.UserContext, w http.ResponseWriter
 }
 
 func (p *Plugin) openAttachCommentIssueModal(c *serializer.UserContext, w http.ResponseWriter, r *http.Request) {
-	owner := r.FormValue(constants.OwnerQueryParam)
-	repo := r.FormValue(constants.RepoQueryParam)
-	number := r.FormValue(constants.NumberQueryParam)
-	postID := r.FormValue(constants.PostIdQueryParam)
-	issueNumber, err := strconv.Atoi(number)
-	if err != nil {
-		p.writeAPIError(w, &serializer.APIErrorResponse{Message: "Invalid param 'number'.", StatusCode: http.StatusBadRequest})
+	req := &serializer.OpenCreateCommentOrEditIssueModal{}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		c.Log.WithError(err).Warnf("Error decoding the JSON body")
+		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: "Please provide a valid JSON object.", StatusCode: http.StatusBadRequest})
 		return
 	}
 
 	userID := r.Header.Get(constants.HeaderMattermostUserID)
-	post, appErr := p.API.GetPost(postID)
+	post, appErr := p.API.GetPost(req.PostID)
 	if appErr != nil {
-		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s", postID), StatusCode: http.StatusInternalServerError})
+		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s", req.PostID), StatusCode: http.StatusInternalServerError})
 		return
 	}
 	if post == nil {
-		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s : not found", postID), StatusCode: http.StatusNotFound})
+		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s : not found", req.PostID), StatusCode: http.StatusNotFound})
 		return
 	}
 
@@ -984,28 +981,31 @@ func (p *Plugin) openAttachCommentIssueModal(c *serializer.UserContext, w http.R
 		wsEventAttachCommentToIssue,
 		map[string]interface{}{
 			"postId": post.Id,
-			"owner":  owner,
-			"repo":   repo,
-			"number": issueNumber,
+			"owner":  req.RepoOwner,
+			"repo":   req.RepoName,
+			"number": req.IssueNumber,
 		},
 		&model.WebsocketBroadcast{UserId: userID},
 	)
 }
 
 func (p *Plugin) openCloseOrReopenIssueModal(c *serializer.UserContext, w http.ResponseWriter, r *http.Request) {
-	owner := r.FormValue(constants.OwnerQueryParam)
-	repo := r.FormValue(constants.RepoQueryParam)
-	number := r.FormValue(constants.NumberQueryParam)
-	postID := r.FormValue(constants.PostIdQueryParam)
+	req := &serializer.OpenCreateCommentOrEditIssueModal{}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		c.Log.WithError(err).Warnf("Error decoding the JSON body")
+		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: "Please provide a valid JSON object.", StatusCode: http.StatusBadRequest})
+		return
+	}
+
 	userID := r.Header.Get(constants.HeaderMattermostUserID)
-	status := r.FormValue(constants.IssueStatus)
-	post, appErr := p.API.GetPost(postID)
+
+	post, appErr := p.API.GetPost(req.PostID)
 	if appErr != nil {
-		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s", postID), StatusCode: http.StatusInternalServerError})
+		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s", req.PostID), StatusCode: http.StatusInternalServerError})
 		return
 	}
 	if post == nil {
-		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s : not found", postID), StatusCode: http.StatusNotFound})
+		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s : not found", req.PostID), StatusCode: http.StatusNotFound})
 		return
 	}
 
@@ -1013,48 +1013,44 @@ func (p *Plugin) openCloseOrReopenIssueModal(c *serializer.UserContext, w http.R
 		wsEventCloseOrReopenIssue,
 		map[string]interface{}{
 			"channel_id": post.ChannelId,
-			"owner":      owner,
-			"repo":       repo,
-			"number":     number,
-			"status":     status,
-			"postId":     postID,
+			"owner":      req.RepoOwner,
+			"repo":       req.RepoName,
+			"number":     req.IssueNumber,
+			"status":     req.Status,
+			"postId":     req.PostID,
 		},
 		&model.WebsocketBroadcast{UserId: userID},
 	)
 }
 
 func (p *Plugin) openIssueEditModal(c *serializer.UserContext, w http.ResponseWriter, r *http.Request) {
-	owner := r.FormValue(constants.OwnerQueryParam)
-	repo := r.FormValue(constants.RepoQueryParam)
-	number := r.FormValue(constants.NumberQueryParam)
-	postID := r.FormValue(constants.PostIdQueryParam)
-	issueNumber, err := strconv.Atoi(number)
-	if err != nil {
-		p.writeAPIError(w, &serializer.APIErrorResponse{Message: "Invalid param 'number'.", StatusCode: http.StatusBadRequest})
+	req := &serializer.OpenCreateCommentOrEditIssueModal{}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		c.Log.WithError(err).Warnf("Error decoding the JSON body")
+		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: "Please provide a valid JSON object.", StatusCode: http.StatusBadRequest})
 		return
 	}
 
 	githubClient := p.githubConnectUser(c.Context.Ctx, c.GHInfo)
-
-	issue, _, err := githubClient.Issues.Get(c.Ctx, owner, repo, issueNumber)
+	issue, _, err := githubClient.Issues.Get(c.Ctx, req.RepoOwner, req.RepoName, req.IssueNumber)
 	if err != nil {
 		// If the issue is not found, it probably belongs to a private repo.
 		// Return an empty response in that case.
 		var gerr *github.ErrorResponse
 		if errors.As(err, &gerr) && gerr.Response.StatusCode == http.StatusNotFound {
 			c.Log.WithError(err).With(logger.LogContext{
-				"owner":  owner,
-				"repo":   repo,
-				"number": issueNumber,
+				"owner":  req.RepoOwner,
+				"repo":   req.RepoName,
+				"number": req.IssueNumber,
 			}).Debugf("Issue not found")
 			p.writeJSON(w, nil)
 			return
 		}
 
 		c.Log.WithError(err).With(logger.LogContext{
-			"owner":  owner,
-			"repo":   repo,
-			"number": issueNumber,
+			"owner":  req.RepoOwner,
+			"repo":   req.RepoName,
+			"number": req.IssueNumber,
 		}).Debugf("Could not get the issue")
 		p.writeAPIError(w, &serializer.APIErrorResponse{Message: "Could not get the issue", StatusCode: http.StatusInternalServerError})
 		return
@@ -1084,13 +1080,13 @@ func (p *Plugin) openIssueEditModal(c *serializer.UserContext, w http.ResponseWr
 	}
 
 	userID := r.Header.Get(constants.HeaderMattermostUserID)
-	post, appErr := p.API.GetPost(postID)
+	post, appErr := p.API.GetPost(req.PostID)
 	if appErr != nil {
-		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s", postID), StatusCode: http.StatusInternalServerError})
+		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s", req.PostID), StatusCode: http.StatusInternalServerError})
 		return
 	}
 	if post == nil {
-		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s : not found", postID), StatusCode: http.StatusNotFound})
+		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s : not found", req.PostID), StatusCode: http.StatusNotFound})
 		return
 	}
 
@@ -1099,13 +1095,13 @@ func (p *Plugin) openIssueEditModal(c *serializer.UserContext, w http.ResponseWr
 		map[string]interface{}{
 			"title":            *issue.Title,
 			"channel_id":       post.ChannelId,
-			"postId":           postID,
+			"postId":           req.PostID,
 			"milestone_title":  milestoneTitle,
 			"milestone_number": milestoneNumber,
 			"assignees":        assignees,
 			"labels":           labels,
 			"description":      description,
-			"repo_full_name":   fmt.Sprintf("%s/%s", owner, repo),
+			"repo_full_name":   fmt.Sprintf("%s/%s", req.RepoOwner, req.RepoName),
 			"issue_number":     *issue.Number,
 		},
 		&model.WebsocketBroadcast{UserId: userID},
@@ -1445,11 +1441,6 @@ func (p *Plugin) closeOrReopenIssue(c *serializer.UserContext, w http.ResponseWr
 		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: "Please provide a valid JSON object.", StatusCode: http.StatusBadRequest})
 		return
 	}
-	issueNumber, err := strconv.Atoi(req.Number)
-	if err != nil {
-		p.writeAPIError(w, &serializer.APIErrorResponse{Message: "Invalid param 'number'.", StatusCode: http.StatusBadRequest})
-		return
-	}
 
 	post, appErr := p.API.GetPost(req.PostID)
 	if appErr != nil {
@@ -1461,18 +1452,18 @@ func (p *Plugin) closeOrReopenIssue(c *serializer.UserContext, w http.ResponseWr
 		return
 	}
 
-	if _, err = p.getUsername(post.UserId); err != nil {
+	if _, err := p.getUsername(post.UserId); err != nil {
 		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: "failed to get username", StatusCode: http.StatusInternalServerError})
 		return
 	}
 	if req.IssueComment != "" {
-		p.CreateCommentToIssue(c, w, req.IssueComment, req.Owner, req.Repository, post, issueNumber)
+		p.CreateCommentToIssue(c, w, req.IssueComment, req.Owner, req.Repository, post, req.Number)
 	}
 
 	if req.Status == constants.Close {
-		p.CloseOrReopenIssue(c, w, constants.IssueClose, req.StatusReason, req.Owner, req.Repository, post, issueNumber)
+		p.CloseOrReopenIssue(c, w, constants.IssueClose, req.StatusReason, req.Owner, req.Repository, post, req.Number)
 	} else {
-		p.CloseOrReopenIssue(c, w, constants.IssueOpen, req.StatusReason, req.Owner, req.Repository, post, issueNumber)
+		p.CloseOrReopenIssue(c, w, constants.IssueOpen, req.StatusReason, req.Owner, req.Repository, post, req.Number)
 	}
 }
 

@@ -11,7 +11,7 @@ import {
     getYourPrs,
     openCreateOrUpdateIssueModal,
     openCloseOrReopenIssueModal,
-    openAttachCommentToIssueModal,
+    openCreateCommentIssueModal,
 } from '../actions';
 
 import {id as pluginId} from '../manifest';
@@ -105,11 +105,11 @@ export function handleOpenCloseOrReopenIssueModal(store) {
     };
 }
 
-export function handleOpenAttachCommentIssueModal(store) {
+export function handleOpenCreateCommentIssueModal(store) {
     return (msg) => {
         if (!msg.data) {
             return;
         }
-        store.dispatch(openAttachCommentToIssueModal(msg.data));
+        store.dispatch(openCreateCommentIssueModal(msg.data));
     };
 }

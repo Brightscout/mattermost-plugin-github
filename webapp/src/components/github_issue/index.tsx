@@ -11,9 +11,8 @@ type GithubIssueProps = {
     post: Post,
 }
 
-const GithubIssue = (props: GithubIssueProps) => {
-    const style = getStyle(props.theme);
-    const post = props.post;
+const GithubIssue = ({theme, post}: GithubIssueProps) => {
+    const style = getStyle(theme);
     const postProps = post.props || {};
     let assignees;
     let labels;
@@ -28,6 +27,14 @@ const GithubIssue = (props: GithubIssueProps) => {
         }
         return null;
     };
+    const issue = {
+        repo_owner: postProps.repo_owner,
+        repo_name: postProps.repo_name,
+        issue_number: postProps.issue_number,
+        postId: post.id,
+        status: postProps.status,
+    };
+
     const content = (
         <div>
             <div>
@@ -35,44 +42,46 @@ const GithubIssue = (props: GithubIssueProps) => {
                     style={{...style.button, ...style.other_buttons}}
                     className='btn btn-primary'
                     onClick={() => {
-                        dispatch(attachCommentIssueModal(postProps.repo_owner, postProps.repo_name, postProps.issue_number, post.id));
+                        dispatch(attachCommentIssueModal(issue));
                     }}
                 >{'Comment'}</button>
                 <button
                     style={{...style.button, ...style.other_buttons}}
                     className='btn btn-primary'
                     onClick={() => {
-                        dispatch(editIssueModal(postProps.repo_owner, postProps.repo_name, postProps.issue_number, post.id));
+                        dispatch(editIssueModal(issue));
                     }}
                 >{'Edit'}</button>
                 <button
                     style={{...style.button, ...updateStyleForCloseOrReopenButton()}}
                     className={buttonClassName}
                     onClick={() => {
-                        dispatch(closeOrReopenIssueModal(postProps.repo_owner, postProps.repo_name, postProps.issue_number, postProps.status, post.id));
+                        dispatch(closeOrReopenIssueModal(issue));
                     }}
                 >{postProps.status}</button>
             </div>
         </div>
     );
-    if (postProps.assignees && postProps.assignees?.length !== 0) {
+
+    if (postProps.assignees?.length) {
         assignees = (
             <div style={style.assignees_and_labels}>
                 <b>{'Assignees'}</b>
                 <div>
-                    {postProps.assignees?.map((assignee: string, index: number) => (
+                    {postProps.assignees.map((assignee: string, index: number) => (
                         <span key={assignee}>{(index ? ', ' : '') + assignee} </span>
                     ))}
                 </div>
             </div>
         );
     }
-    if (postProps.labels && postProps.labels?.length !== 0) {
+
+    if (postProps.labels?.length) {
         labels = (
             <div style={style.assignees_and_labels}>
                 <b>{'Labels'}</b>
                 <div>
-                    {postProps.labels?.map((label: string, index: number) => (
+                    {postProps.labels.map((label: string, index: number) => (
                         <span key={label}>{(index ? ', ' : '') + label} </span>
                     ))}
                 </div>
@@ -93,30 +102,28 @@ const GithubIssue = (props: GithubIssueProps) => {
     );
 };
 
-const getStyle = makeStyleFromTheme((theme) => {
-    return {
-        button: {
-            fontFamily: 'Open Sans',
-            fontSize: '12px',
-            fontWeight: 'bold',
-            letterSpacing: '1px',
-            lineHeight: '19px',
-            margin: '12px 12px 8px 0px',
-            borderRadius: '4px',
-            color: theme.buttonColor,
-        },
-        close_or_reopen_button: {
-            backgroundColor: theme.buttonBg,
-        },
-        other_buttons: {
-            backgroundColor: theme.buttonBg,
-        },
-        assignees_and_labels: {
-            display: 'inline-block',
-            verticalAlign: 'top',
-            width: '30%',
-        },
-    };
-});
+const getStyle = makeStyleFromTheme((theme) => ({
+    button: {
+        fontFamily: 'Open Sans',
+        fontSize: '12px',
+        fontWeight: 'bold',
+        letterSpacing: '1px',
+        lineHeight: '19px',
+        margin: '12px 12px 8px 0px',
+        borderRadius: '4px',
+        color: theme.buttonColor,
+    },
+    close_or_reopen_button: {
+        backgroundColor: theme.buttonBg,
+    },
+    other_buttons: {
+        backgroundColor: theme.buttonBg,
+    },
+    assignees_and_labels: {
+        display: 'inline-block',
+        verticalAlign: 'top',
+        width: '30%',
+    },
+}));
 
 export default GithubIssue;

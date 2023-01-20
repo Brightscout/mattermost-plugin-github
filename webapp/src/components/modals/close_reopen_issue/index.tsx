@@ -18,8 +18,7 @@ import Input from '../../input';
 const CloseOrReopenIssueModal = ({theme}: {theme: Theme}) => {
     const dispatch = useDispatch();
     const closeOrReopenIssueModalData = useSelector(getCloseOrReopenIssueModalData);
-    const messageData = closeOrReopenIssueModalData.messageData;
-    const visible = closeOrReopenIssueModalData.visible;
+    const {messageData, visible} = closeOrReopenIssueModalData;
     const [statusReason, setStatusReason] = useState('completed');
     const [submitting, setSubmitting] = useState(false);
     const [comment, setComment] = useState('');
@@ -43,6 +42,7 @@ const CloseOrReopenIssueModal = ({theme}: {theme: Theme}) => {
             status: messageData.status,
             postId: messageData.postId,
         };
+
         setSubmitting(true);
         await dispatch(closeOrReopenIssue(issue));
         setSubmitting(false);
@@ -64,9 +64,9 @@ const CloseOrReopenIssueModal = ({theme}: {theme: Theme}) => {
     const modalTitle = messageData.status + ' Issue';
     const savingMessage = messageData.status === 'Close' ? 'Closing' : 'Reopening';
     const status = messageData.status + ' Issue';
-
     const submitError = null;
-    let component = (
+
+    const component = (messageData.status === 'Close') ? (
         <div>
             <Input
                 label='Leave a comment (optional)'
@@ -80,13 +80,14 @@ const CloseOrReopenIssueModal = ({theme}: {theme: Theme}) => {
                     id='completed'
                     name='close_issue'
                     value='completed'
-                    defaultChecked // eslint-disable-line
+                defaultChecked // eslint-disable-line
                     onChange={handleStatusChange}
                 />
                 <label
                     style={style.radioButtons}
                     htmlFor='completed'
-                >{'Mark issue as completed'}
+                >
+                    {'Mark issue as completed'}
                 </label>
                 <br/>
                 <input
@@ -99,23 +100,21 @@ const CloseOrReopenIssueModal = ({theme}: {theme: Theme}) => {
                 <label
                     style={style.radioButtons}
                     htmlFor='not_planned'
-                >{'Mark issue as not planned'}
+                >
+                    {'Mark issue as not planned'}
                 </label>
             </div>
         </div>
+    ) : (
+        <div>
+            <Input
+                label='Leave a comment (optional)'
+                type='textarea'
+                onChange={handleIssueCommentChange}
+                value={comment}
+            />
+        </div>
     );
-    if (messageData.status !== 'Close') {
-        component = (
-            <div>
-                <Input
-                    label='Leave a comment (optional)'
-                    type='textarea'
-                    onChange={handleIssueCommentChange}
-                    value={comment}
-                />
-            </div>
-        );
-    }
 
     return (
         <Modal

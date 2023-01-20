@@ -211,11 +211,11 @@ export function getMilestoneOptions(repo) {
     };
 }
 
-export function attachCommentIssueModal(owner, repo, issueNumber, postId) {
+export function attachCommentIssueModal(payload) {
     return async (dispatch, getState) => {
         let data;
         try {
-            data = await Client.attachCommentIssueModal(owner, repo, issueNumber, postId);
+            data = await Client.attachCommentIssueModal(payload);
         } catch (error) {
             return {error};
         }
@@ -229,11 +229,11 @@ export function attachCommentIssueModal(owner, repo, issueNumber, postId) {
     };
 }
 
-export function editIssueModal(owner, repo, issueNumber, postId) {
+export function editIssueModal(payload) {
     return async (dispatch, getState) => {
         let data;
         try {
-            data = await Client.editIssueModal(owner, repo, issueNumber, postId);
+            data = await Client.editIssueModal(payload);
         } catch (error) {
             return {error};
         }
@@ -247,11 +247,11 @@ export function editIssueModal(owner, repo, issueNumber, postId) {
     };
 }
 
-export function closeOrReopenIssueModal(owner, repo, issueNumber, status, postId) {
+export function closeOrReopenIssueModal(payload) {
     return async (dispatch, getState) => {
         let data;
         try {
-            data = await Client.closeOrReopenIssueModal(owner, repo, issueNumber, status, postId);
+            data = await Client.closeOrReopenIssueModal(payload);
         } catch (error) {
             return {error};
         }
@@ -420,6 +420,15 @@ export function openCloseOrReopenIssueModal(messageData) {
     };
 }
 
+export function openCreateCommentIssueModal(messageData) {
+    return {
+        type: ActionTypes.OPEN_ATTACH_COMMENT_TO_ISSUE_MODAL,
+        data: {
+            messageData,
+        },
+    };
+}
+
 export function closeCreateOrUpdateIssueModal() {
     return {
         type: ActionTypes.CLOSE_CREATE_OR_UPDATE_ISSUE_MODAL,
@@ -486,11 +495,11 @@ export function updateIssue(payload) {
     };
 }
 
-export function openAttachCommentToIssueModal(messageData) {
+export function openAttachCommentToIssueModal(postId) {
     return {
         type: ActionTypes.OPEN_ATTACH_COMMENT_TO_ISSUE_MODAL,
         data: {
-            messageData,
+            postId,
         },
     };
 }

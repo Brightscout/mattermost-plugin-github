@@ -36,9 +36,17 @@ type CommentAndCloseRequest struct {
 	ChannelID    string `json:"channel_id"`
 	IssueComment string `json:"issue_comment"`
 	StatusReason string `json:"status_reason"`
-	Number       string `json:"number"`
+	Number       int    `json:"number"`
 	Owner        string `json:"owner"`
 	Repository   string `json:"repo"`
 	Status       string `json:"status"`
 	PostID       string `json:"postId"`
+}
+
+type OpenCreateCommentOrEditIssueModal struct {
+	RepoOwner   string `json:"repo_owner"`
+	RepoName    string `json:"repo_name"`
+	IssueNumber int    `json:"issue_number"`
+	PostID      string `json:"postId"`
+	Status      string `json:"status"`
 }

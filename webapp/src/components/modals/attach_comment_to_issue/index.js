@@ -11,8 +11,9 @@ import {closeAttachCommentToIssueModal, attachCommentToIssue} from 'actions';
 import AttachCommentToIssue from './attach_comment_to_issue';
 
 const mapStateToProps = (state) => {
-    const {messageData} = state[`plugins-${pluginId}`].attachCommentToIssueModalForPostId;
-    const post = getPost(state, messageData?.postId);
+    const {postId, messageData} = state[`plugins-${pluginId}`].attachCommentToIssueModalForPostId;
+    const currentPostId = postId || messageData?.postId;
+    const post = currentPostId ? getPost(state, currentPostId) : null;
 
     return {
         visible: state[`plugins-${pluginId}`].attachCommentToIssueModalVisible,

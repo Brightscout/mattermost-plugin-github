@@ -247,6 +247,8 @@ const attachCommentToIssueModalForPostId = (state = '', action) => {
     switch (action.type) {
     case ActionTypes.OPEN_ATTACH_COMMENT_TO_ISSUE_MODAL:
         return {
+            ...state,
+            postId: action.data.postId,
             messageData: action.data.messageData,
         };
     case ActionTypes.CLOSE_ATTACH_COMMENT_TO_ISSUE_MODAL:

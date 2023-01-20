@@ -7,16 +7,16 @@ import {ClientError} from 'mattermost-redux/client/client4';
 import {id as pluginId} from '../manifest';
 
 export default class Client {
-    editIssueModal = async (owner, repo, issueNumber, postId) => {
-        return this.doPost(`${this.url}/editissuemodal?owner=${owner}&repo=${repo}&number=${issueNumber}&postId=${postId}`);
+    editIssueModal = async (payload) => {
+        return this.doPost(`${this.url}/editissuemodal`, payload);
     }
 
-    closeOrReopenIssueModal = async (owner, repo, issueNumber, status, postId) => {
-        return this.doPost(`${this.url}/closereopenissuemodal?owner=${owner}&repo=${repo}&number=${issueNumber}&status=${status}&postId=${postId}`);
+    closeOrReopenIssueModal = async (payload) => {
+        return this.doPost(`${this.url}/closereopenissuemodal`, payload);
     }
 
-    attachCommentIssueModal = async (owner, repo, issueNumber, postId) => {
-        return this.doPost(`${this.url}/attachcommentissuemodal?owner=${owner}&repo=${repo}&number=${issueNumber}&postId=${postId}`);
+    attachCommentIssueModal = async (payload) => {
+        return this.doPost(`${this.url}/attachcommentissuemodal`, payload);
     }
 
     setServerRoute(url) {

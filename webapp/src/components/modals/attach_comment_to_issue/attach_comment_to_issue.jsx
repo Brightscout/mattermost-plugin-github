@@ -40,7 +40,7 @@ export default class AttachIssueModal extends PureComponent {
         }
 
         if (!this.state.issueValue) {
-            const {owner, repo, number} = this.props.messageData;
+            const {owner, repo, number} = this.props.messageData ?? {};
             const issue = {
                 owner,
                 repo,
@@ -107,16 +107,26 @@ export default class AttachIssueModal extends PureComponent {
     };
 
     render() {
-        const {error, submitting} = this.state;
-        const {visible, theme} = this.props;
+        const {error, submitting, comment, issueValue} = this.state;
+        const {visible, theme, messageData, post} = this.props;
         const style = getStyle(theme);
         if (!visible) {
             return null;
         }
 
-        const {number} = this.props.messageData;
+        const {number} = messageData ?? {};
         const modalTitle = number ? 'Create a comment to GitHub Issue' : 'Attach Message to GitHub Issue';
-        let component = (
+        const component = number ? (
+            <div>
+                <Input
+                    label='Create a comment'
+                    type='textarea'
+                    onChange={this.handleIssueCommentChange}
+                    value={comment}
+                />
+
+            </div>
+        ) : (
             <div>
                 <GithubIssueSelector
                     id={'issue'}
@@ -124,31 +134,18 @@ export default class AttachIssueModal extends PureComponent {
                     required={true}
                     theme={theme}
                     error={error}
-                    value={this.state.issueValue}
+                    value={issueValue}
                 />
                 <Input
                     label='Message Attached to GitHub Issue'
                     type='textarea'
                     isDisabled={true}
-                    value={this.props.post.message}
+                    value={post?.message}
                     disabled={false}
                     readOnly={true}
                 />
             </div>
         );
-        if (number) {
-            component = (
-                <div>
-                    <Input
-                        label='Create a comment'
-                        type='textarea'
-                        onChange={this.handleIssueCommentChange}
-                        value={this.state.comment}
-                    />
-
-                </div>
-            );
-        }
 
         return (
             <Modal

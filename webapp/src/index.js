@@ -4,18 +4,18 @@ import AttachCommentToIssuePostMenuAction from 'components/post_menu_actions/att
 import AttachCommentToIssueModal from 'components/modals/attach_comment_to_issue';
 
 import CreateOrUpdateIssueModal from './components/modals/create_update_issue';
-import CloseOrReopenIssueModal from './components/modals/close_reopen_issue/close_reopen_issue.tsx';
+import CloseOrReopenIssueModal from './components/modals/close_reopen_issue/index.tsx';
 import CreateIssuePostMenuAction from './components/post_menu_action/create_issue';
 import SidebarHeader from './components/sidebar_header';
 import TeamSidebar from './components/team_sidebar';
 import UserAttribute from './components/user_attribute';
 import SidebarRight from './components/sidebar_right';
 import LinkTooltip from './components/link_tooltip';
-import GithubIssue from './components/github_issue/github_issue.tsx';
+import GithubIssue from './components/github_issue/index.tsx';
 import Reducer from './reducers';
 import Client from './client';
 import {getConnected, setShowRHSAction} from './actions';
-import {handleConnect, handleDisconnect, handleConfigurationUpdate, handleOpenCreateOrUpdateIssueModal, handleOpenAttachCommentIssueModal, handleOpenCloseOrReopenIssueModal, handleReconnect, handleRefresh} from './websocket';
+import {handleConnect, handleDisconnect, handleConfigurationUpdate, handleOpenCreateOrUpdateIssueModal, handleOpenCreateCommentIssueModal, handleOpenCloseOrReopenIssueModal, handleReconnect, handleRefresh} from './websocket';
 import {getServerRoute} from './selectors';
 import {id as pluginId} from './manifest';
 
@@ -48,7 +48,7 @@ class PluginClass {
         registry.registerWebSocketEventHandler(`custom_${pluginId}_config_update`, handleConfigurationUpdate(store));
         registry.registerWebSocketEventHandler(`custom_${pluginId}_refresh`, handleRefresh(store));
         registry.registerWebSocketEventHandler(`custom_${pluginId}_createOrUpdateIssue`, handleOpenCreateOrUpdateIssueModal(store));
-        registry.registerWebSocketEventHandler(`custom_${pluginId}_attachCommentToIssue`, handleOpenAttachCommentIssueModal(store));
+        registry.registerWebSocketEventHandler(`custom_${pluginId}_attachCommentToIssue`, handleOpenCreateCommentIssueModal(store));
         registry.registerWebSocketEventHandler(`custom_${pluginId}_closeOrReopenIssue`, handleOpenCloseOrReopenIssueModal(store));
         registry.registerPostTypeComponent('custom_git_issue', GithubIssue);
 
