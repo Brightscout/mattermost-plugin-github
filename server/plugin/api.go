@@ -959,7 +959,7 @@ func (p *Plugin) updateSettings(c *serializer.UserContext, w http.ResponseWriter
 }
 
 func (p *Plugin) openAttachCommentIssueModal(c *serializer.UserContext, w http.ResponseWriter, r *http.Request) {
-	req := &serializer.OpenCreateCommentOrEditIssueModal{}
+	req := &serializer.OpenCreateCommentOrEditIssueModalRequestBody{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		c.Log.WithError(err).Warnf("Error decoding the JSON body")
 		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: "Please provide a valid JSON object.", StatusCode: http.StatusBadRequest})
@@ -990,7 +990,7 @@ func (p *Plugin) openAttachCommentIssueModal(c *serializer.UserContext, w http.R
 }
 
 func (p *Plugin) openCloseOrReopenIssueModal(c *serializer.UserContext, w http.ResponseWriter, r *http.Request) {
-	req := &serializer.OpenCreateCommentOrEditIssueModal{}
+	req := &serializer.OpenCreateCommentOrEditIssueModalRequestBody{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		c.Log.WithError(err).Warnf("Error decoding the JSON body")
 		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: "Please provide a valid JSON object.", StatusCode: http.StatusBadRequest})
@@ -1024,7 +1024,7 @@ func (p *Plugin) openCloseOrReopenIssueModal(c *serializer.UserContext, w http.R
 }
 
 func (p *Plugin) openIssueEditModal(c *serializer.UserContext, w http.ResponseWriter, r *http.Request) {
-	req := &serializer.OpenCreateCommentOrEditIssueModal{}
+	req := &serializer.OpenCreateCommentOrEditIssueModalRequestBody{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		c.Log.WithError(err).Warnf("Error decoding the JSON body")
 		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: "Please provide a valid JSON object.", StatusCode: http.StatusBadRequest})

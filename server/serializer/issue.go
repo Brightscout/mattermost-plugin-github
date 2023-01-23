@@ -43,7 +43,7 @@ type CommentAndCloseRequest struct {
 	PostID       string `json:"postId"`
 }
 
-type OpenCreateCommentOrEditIssueModal struct {
+type OpenCreateCommentOrEditIssueModalRequestBody struct {
 	RepoOwner   string `json:"repo_owner"`
 	RepoName    string `json:"repo_name"`
 	IssueNumber int    `json:"issue_number"`

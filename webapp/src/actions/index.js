@@ -420,7 +420,7 @@ export function openCloseOrReopenIssueModal(messageData) {
     };
 }
 
-export function openCreateCommentIssueModal(messageData) {
+export function openCreateCommentOnIssueModal(messageData) {
     return {
         type: ActionTypes.OPEN_ATTACH_COMMENT_TO_ISSUE_MODAL,
         data: {
