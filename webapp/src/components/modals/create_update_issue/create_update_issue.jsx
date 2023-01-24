@@ -223,7 +223,7 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
                 />
 
                 <Input
-                    id={'title'}
+                    id='title'
                     label='Title for the GitHub Issue'
                     type='input'
                     required={true}
@@ -253,7 +253,7 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
                 />
 
                 <Input
-                    id={'title'}
+                    id='title'
                     label='Title for the GitHub Issue'
                     type='input'
                     required={true}

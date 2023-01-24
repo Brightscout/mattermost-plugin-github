@@ -174,7 +174,7 @@ const getStyle = (theme: Theme) => ({
         color: '#000',
     },
     radioButtons: {
-        margin: '7px 10px',
+        margin: '0.4em 0.6em',
     },
 });
 

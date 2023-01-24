@@ -266,7 +266,7 @@ const getStyle = makeStyleFromTheme((theme) => ({
         fontWeight: 'bold',
     },
     subtitle: {
-        margin: '5px 0 0 0',
+        marginTop: '5px',
         fontSize: '13px',
     },
     subtitleSecondLine: {

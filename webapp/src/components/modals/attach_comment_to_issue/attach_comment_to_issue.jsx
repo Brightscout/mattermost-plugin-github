@@ -124,7 +124,6 @@ export default class AttachIssueModal extends PureComponent {
                     onChange={this.handleIssueCommentChange}
                     value={comment}
                 />
-
             </div>
         ) : (
             <div>

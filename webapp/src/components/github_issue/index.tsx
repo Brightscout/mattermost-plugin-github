@@ -21,11 +21,9 @@ const GithubIssue = ({theme, post}: GithubIssueProps) => {
 
     const updateStyleForCloseOrReopenButton = () => {
         if (postProps.status === 'Close') {
-            buttonClassName = 'btn btn-danger';
-            style.close_or_reopen_button.backgroundColor = '#dc3545';
             return style.close_or_reopen_button;
         }
-        return null;
+        return style.other_buttons;
     };
     const issue = {
         repo_owner: postProps.repo_owner,
@@ -37,29 +35,21 @@ const GithubIssue = ({theme, post}: GithubIssueProps) => {
 
     const content = (
         <div>
-            <div>
                 <button
                     style={{...style.button, ...style.other_buttons}}
                     className='btn btn-primary'
-                    onClick={() => {
-                        dispatch(attachCommentIssueModal(issue));
-                    }}
+                    onClick={() => dispatch(attachCommentIssueModal(issue))}
                 >{'Comment'}</button>
                 <button
                     style={{...style.button, ...style.other_buttons}}
                     className='btn btn-primary'
-                    onClick={() => {
-                        dispatch(editIssueModal(issue));
-                    }}
+                    onClick={() => dispatch(editIssueModal(issue))}
                 >{'Edit'}</button>
                 <button
                     style={{...style.button, ...updateStyleForCloseOrReopenButton()}}
                     className={buttonClassName}
-                    onClick={() => {
-                        dispatch(closeOrReopenIssueModal(issue));
-                    }}
+                    onClick={() => dispatch(closeOrReopenIssueModal(issue))}
                 >{postProps.status}</button>
-            </div>
         </div>
     );
 
@@ -114,7 +104,7 @@ const getStyle = makeStyleFromTheme((theme) => ({
         color: theme.buttonColor,
     },
     close_or_reopen_button: {
-        backgroundColor: theme.buttonBg,
+        backgroundColor: '#dc3545',
     },
     other_buttons: {
         backgroundColor: theme.buttonBg,
