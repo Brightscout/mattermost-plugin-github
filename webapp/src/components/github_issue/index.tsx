@@ -16,15 +16,9 @@ const GithubIssue = ({theme, post}: GithubIssueProps) => {
     const postProps = post.props || {};
     let assignees;
     let labels;
-    let buttonClassName = 'btn btn-primary';
+    const buttonClassName = 'btn btn-primary';
     const dispatch = useDispatch();
 
-    const updateStyleForCloseOrReopenButton = () => {
-        if (postProps.status === 'Close') {
-            return style.close_or_reopen_button;
-        }
-        return style.other_buttons;
-    };
     const issue = {
         repo_owner: postProps.repo_owner,
         repo_name: postProps.repo_name,
@@ -35,21 +29,21 @@ const GithubIssue = ({theme, post}: GithubIssueProps) => {
 
     const content = (
         <div>
-                <button
-                    style={{...style.button, ...style.other_buttons}}
-                    className='btn btn-primary'
-                    onClick={() => dispatch(attachCommentIssueModal(issue))}
-                >{'Comment'}</button>
-                <button
-                    style={{...style.button, ...style.other_buttons}}
-                    className='btn btn-primary'
-                    onClick={() => dispatch(editIssueModal(issue))}
-                >{'Edit'}</button>
-                <button
-                    style={{...style.button, ...updateStyleForCloseOrReopenButton()}}
-                    className={buttonClassName}
-                    onClick={() => dispatch(closeOrReopenIssueModal(issue))}
-                >{postProps.status}</button>
+            <button
+                style={{...style.button, ...style.other_buttons}}
+                className='btn btn-primary'
+                onClick={() => dispatch(attachCommentIssueModal(issue))}
+            >{'Comment'}</button>
+            <button
+                style={{...style.button, ...style.other_buttons}}
+                className='btn btn-primary'
+                onClick={() => dispatch(editIssueModal(issue))}
+            >{'Edit'}</button>
+            <button
+                style={{...style.button, ...{...postProps.status === 'Close' ? style.close_or_reopen_button : style.other_buttons}}}
+                className={buttonClassName}
+                onClick={() => dispatch(closeOrReopenIssueModal(issue))}
+            >{postProps.status}</button>
         </div>
     );
 
@@ -82,7 +76,13 @@ const GithubIssue = ({theme, post}: GithubIssueProps) => {
     return (
         <div>
             <h5>
-                <a href={postProps.issue_url}>{'#'}{postProps.issue_number} {postProps.title}</a>
+                <a
+                    href={postProps.issue_url}
+                    target='_blank'
+                    rel='noopener noreferrer'
+                >
+                    {'#' + postProps.issue_number + ' ' + postProps.title}
+                </a>
             </h5>
             <p>{postProps.description}</p>
             {assignees}
