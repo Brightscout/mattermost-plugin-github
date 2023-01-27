@@ -16,7 +16,6 @@ const GithubIssue = ({theme, post}: GithubIssueProps) => {
     const postProps = post.props || {};
     let assignees;
     let labels;
-    const buttonClassName = 'btn btn-primary';
     const dispatch = useDispatch();
 
     const issue = {
@@ -41,7 +40,7 @@ const GithubIssue = ({theme, post}: GithubIssueProps) => {
             >{'Edit'}</button>
             <button
                 style={{...style.button, ...{...postProps.status === 'Close' ? style.close_or_reopen_button : style.other_buttons}}}
-                className={buttonClassName}
+                className='btn btn-primary'
                 onClick={() => dispatch(closeOrReopenIssueModal(issue))}
             >{postProps.status}</button>
         </div>
