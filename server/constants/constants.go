@@ -5,7 +5,7 @@ import "time"
 const (
 	APIErrorIDNotConnected = "not_connected"
 	// TokenTTL is the OAuth token expiry duration in seconds
-	TokenTTL = 10 * 60
+	TokenTTL = 600
 
 	RequestTimeout         = 30 * time.Second
 	OauthCompleteTimeout   = 2 * time.Minute

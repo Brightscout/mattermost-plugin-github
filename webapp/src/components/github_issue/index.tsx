@@ -103,7 +103,7 @@ const getStyle = makeStyleFromTheme((theme) => ({
         color: theme.buttonColor,
     },
     close_or_reopen_button: {
-        backgroundColor: '#dc3545',
+        backgroundColor: theme.errorTextColor,
     },
     other_buttons: {
         backgroundColor: theme.buttonBg,
