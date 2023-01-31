@@ -113,6 +113,12 @@ func NewPlugin() *Plugin {
 		"issue":         p.handleIssue,
 	}
 
+	p.createGithubEmojiMap()
+
+	return p
+}
+
+func (p *Plugin) createGithubEmojiMap() {
 	baseGithubEmojiMap := map[string]string{
 		"+1":         "+1",
 		"-1":         "-1",
@@ -134,8 +140,6 @@ func NewPlugin() *Plugin {
 			}
 		}
 	}
-
-	return p
 }
 
 func (p *Plugin) GetGitHubClient(ctx context.Context, userID string) (*github.Client, error) {
@@ -281,6 +285,7 @@ func (p *Plugin) getPostPropsForReaction(reaction *model.Reaction) (orgRepo []st
 		return orgRepo, id, objectType, false
 	}
 
+	// Getting the github repository from notification post props
 	repo, ok := post.GetProp(postPropGithubRepo).(string)
 	if !ok || repo == "" {
 		return orgRepo, id, objectType, false
@@ -292,11 +297,13 @@ func (p *Plugin) getPostPropsForReaction(reaction *model.Reaction) (orgRepo []st
 		return orgRepo, id, objectType, false
 	}
 
+	// Getting the github object id from notification post props
 	id, ok = post.GetProp(postPropGithubObjectID).(float64)
 	if !ok || id == 0 {
 		return orgRepo, id, objectType, false
 	}
 
+	// Getting the github object type from notification post props
 	objectType, ok = post.GetProp(postPropGithubObjectType).(string)
 	if !ok || objectType == "" {
 		return orgRepo, id, objectType, false
@@ -308,6 +315,7 @@ func (p *Plugin) getPostPropsForReaction(reaction *model.Reaction) (orgRepo []st
 func (p *Plugin) ReactionHasBeenAdded(c *plugin.Context, reaction *model.Reaction) {
 	githubEmoji := p.emojiMap[reaction.EmojiName]
 	if githubEmoji == "" {
+		p.API.LogWarn("Emoji is not supported by github", "emoji", reaction.EmojiName)
 		return
 	}
 
@@ -350,6 +358,7 @@ func (p *Plugin) ReactionHasBeenAdded(c *plugin.Context, reaction *model.Reactio
 func (p *Plugin) ReactionHasBeenRemoved(c *plugin.Context, reaction *model.Reaction) {
 	githubEmoji := p.emojiMap[reaction.EmojiName]
 	if githubEmoji == "" {
+		p.API.LogWarn("Emoji is not supported by github", "emoji", reaction.EmojiName)
 		return
 	}
 
