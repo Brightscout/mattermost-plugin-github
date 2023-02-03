@@ -316,7 +316,7 @@ func (p *Plugin) getPostPropsForReaction(reaction *model.Reaction) (org, repo st
 func (p *Plugin) ReactionHasBeenAdded(c *plugin.Context, reaction *model.Reaction) {
 	githubEmoji := p.emojiMap[reaction.EmojiName]
 	if githubEmoji == "" {
-		p.API.LogWarn("Emoji is not supported by github", "Emoji", reaction.EmojiName)
+		p.API.LogWarn("Emoji is not supported by Github", "Emoji", reaction.EmojiName)
 		return
 	}
 
@@ -360,7 +360,7 @@ func (p *Plugin) ReactionHasBeenAdded(c *plugin.Context, reaction *model.Reactio
 func (p *Plugin) ReactionHasBeenRemoved(c *plugin.Context, reaction *model.Reaction) {
 	githubEmoji := p.emojiMap[reaction.EmojiName]
 	if githubEmoji == "" {
-		p.API.LogWarn("Emoji is not supported by github", "Emoji", reaction.EmojiName)
+		p.API.LogWarn("Emoji is not supported by Github", "Emoji", reaction.EmojiName)
 		return
 	}
 
