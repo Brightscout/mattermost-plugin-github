@@ -16,10 +16,11 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 
-	"github.com/mattermost/mattermost-plugin-api/experimental/bot/logger"
-	"github.com/mattermost/mattermost-plugin-api/experimental/flow"
 	"github.com/mattermost/mattermost-plugin-github/server/constants"
 	"github.com/mattermost/mattermost-plugin-github/server/serializer"
+
+	"github.com/mattermost/mattermost-plugin-api/experimental/bot/logger"
+	"github.com/mattermost/mattermost-plugin-api/experimental/flow"
 	"github.com/mattermost/mattermost-server/v6/model"
 	"github.com/mattermost/mattermost-server/v6/plugin"
 )
@@ -1430,7 +1431,7 @@ func (p *Plugin) updateIssue(c *serializer.UserContext, w http.ResponseWriter, r
 		return
 	}
 
-	p.updatePost(post, issue, w)
+	p.updatePost(issue, w)
 	p.writeJSON(w, result)
 }
 
