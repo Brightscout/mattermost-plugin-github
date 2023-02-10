@@ -32,15 +32,15 @@ export default class Client {
     }
 
     getYourPrs = async () => {
-        return this.doGet(`${this.url}/yourprs`);
+        return this.doGet(`${this.url}/your_prs`);
     }
 
     getPrsDetails = async (prList) => {
-        return this.doPost(`${this.url}/prsdetails`, prList);
+        return this.doPost(`${this.url}/prs_details`, prList);
     }
 
     getYourAssignments = async () => {
-        return this.doGet(`${this.url}/yourassignments`);
+        return this.doGet(`${this.url}/your_assignments`);
     }
 
     getMentions = async () => {
@@ -72,7 +72,7 @@ export default class Client {
     }
 
     createIssue = async (payload) => {
-        return this.doPost(`${this.url}/createissue`, payload);
+        return this.doPost(`${this.url}/create_issue`, payload);
     }
 
     closeOrReopenIssue = async (payload) => {
@@ -84,11 +84,11 @@ export default class Client {
     }
 
     searchIssues = async (searchTerm) => {
-        return this.doGet(`${this.url}/searchissues?term=${searchTerm}`);
+        return this.doGet(`${this.url}/search_issues?term=${searchTerm}`);
     }
 
     attachCommentToIssue = async (payload) => {
-        return this.doPost(`${this.url}/createissuecomment`, payload);
+        return this.doPost(`${this.url}/create_issue_comment`, payload);
     }
 
     getIssue = async (owner, repo, issueNumber) => {
