@@ -8,7 +8,7 @@ import {id as pluginId} from '../manifest';
 
 export default class Client {
     editIssueModal = async (payload) => {
-        return this.doPost(`${this.url}/editissuemodal`, payload);
+        return this.doPost(`${this.url}/edit_issue_modal`, payload);
     }
 
     closeOrReopenIssueModal = async (payload) => {
@@ -16,7 +16,7 @@ export default class Client {
     }
 
     attachCommentIssueModal = async (payload) => {
-        return this.doPost(`${this.url}/attachcommentissuemodal`, payload);
+        return this.doPost(`${this.url}/attach_comment_issue_modal`, payload);
     }
 
     setServerRoute(url) {
@@ -76,11 +76,11 @@ export default class Client {
     }
 
     closeOrReopenIssue = async (payload) => {
-        return this.doPost(`${this.url}/closeorreopenissue`, payload);
+        return this.doPost(`${this.url}/close_or_reopen_issue`, payload);
     }
 
     updateIssue = async (payload) => {
-        return this.doPost(`${this.url}/updateissue`, payload);
+        return this.doPost(`${this.url}/update_issue`, payload);
     }
 
     searchIssues = async (searchTerm) => {
