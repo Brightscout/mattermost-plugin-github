@@ -40,11 +40,11 @@ export default class AttachIssueModal extends PureComponent {
         }
 
         if (!this.state.issueValue) {
-            const {owner, repo, number} = this.props.messageData ?? {};
+            const {repo_owner, repo_name, issue_number} = this.props.messageData ?? {};
             const issue = {
-                owner,
-                repo,
-                number,
+                owner: repo_owner,
+                repo: repo_name,
+                number: issue_number,
                 comment: this.state.comment,
                 post_id: this.props.post.id,
                 show_attached_message: false,
@@ -114,9 +114,9 @@ export default class AttachIssueModal extends PureComponent {
             return null;
         }
 
-        const {number} = messageData ?? {};
-        const modalTitle = number ? 'Create a comment to GitHub Issue' : 'Attach Message to GitHub Issue';
-        const component = number ? (
+        const {issue_number} = messageData ?? {};
+        const modalTitle = issue_number ? 'Create a comment to GitHub Issue' : 'Attach Message to GitHub Issue';
+        const component = issue_number ? (
             <div>
                 <Input
                     label='Create a comment'
@@ -138,7 +138,7 @@ export default class AttachIssueModal extends PureComponent {
                 <Input
                     label='Message Attached to GitHub Issue'
                     type='textarea'
-                    isDisabled={true}
+                    isDisabled={false}
                     value={post?.message}
                     disabled={false}
                     readOnly={true}

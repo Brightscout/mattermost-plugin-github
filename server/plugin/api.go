@@ -97,9 +97,7 @@ func (p *Plugin) initializeAPI() {
 	apiRouter.HandleFunc("/create_issue", p.checkAuth(p.attachUserContext(p.createIssue), ResponseTypePlain)).Methods(http.MethodPost)
 	apiRouter.HandleFunc("/close_or_reopen_issue", p.checkAuth(p.attachUserContext(p.closeOrReopenIssue), ResponseTypePlain)).Methods(http.MethodPost)
 	apiRouter.HandleFunc("/update_issue", p.checkAuth(p.attachUserContext(p.updateIssue), ResponseTypePlain)).Methods(http.MethodPost)
-	apiRouter.HandleFunc("/edit_issue_modal", p.checkAuth(p.attachUserContext(p.openIssueEditModal), ResponseTypePlain)).Methods(http.MethodPost)
-	apiRouter.HandleFunc("/close_reopen_issue_modal", p.checkAuth(p.attachUserContext(p.openCloseOrReopenIssueModal), ResponseTypePlain)).Methods(http.MethodPost)
-	apiRouter.HandleFunc("/attach_comment_issue_modal", p.checkAuth(p.attachUserContext(p.openAttachCommentIssueModal), ResponseTypePlain)).Methods(http.MethodPost)
+	apiRouter.HandleFunc("/issue_info", p.checkAuth(p.attachUserContext(p.getIssueInfo), ResponseTypePlain)).Methods(http.MethodPost)
 	apiRouter.HandleFunc("/create_issue_comment", p.checkAuth(p.attachUserContext(p.createIssueComment), ResponseTypePlain)).Methods(http.MethodPost)
 	apiRouter.HandleFunc("/mentions", p.checkAuth(p.attachUserContext(p.getMentions), ResponseTypePlain)).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/unreads", p.checkAuth(p.attachUserContext(p.getUnreads), ResponseTypePlain)).Methods(http.MethodGet)
@@ -959,72 +957,7 @@ func (p *Plugin) updateSettings(c *serializer.UserContext, w http.ResponseWriter
 	p.writeJSON(w, info.Settings)
 }
 
-func (p *Plugin) openAttachCommentIssueModal(c *serializer.UserContext, w http.ResponseWriter, r *http.Request) {
-	req := &serializer.OpenCreateCommentOrEditIssueModalRequestBody{}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		c.Log.WithError(err).Warnf("Error decoding the JSON body")
-		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: "Please provide a valid JSON object.", StatusCode: http.StatusBadRequest})
-		return
-	}
-
-	userID := r.Header.Get(constants.HeaderMattermostUserID)
-	post, appErr := p.API.GetPost(req.PostID)
-	if appErr != nil {
-		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s", req.PostID), StatusCode: http.StatusInternalServerError})
-		return
-	}
-	if post == nil {
-		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s : not found", req.PostID), StatusCode: http.StatusNotFound})
-		return
-	}
-
-	p.API.PublishWebSocketEvent(
-		wsEventAttachCommentToIssue,
-		map[string]interface{}{
-			"postId": post.Id,
-			"owner":  req.RepoOwner,
-			"repo":   req.RepoName,
-			"number": req.IssueNumber,
-		},
-		&model.WebsocketBroadcast{UserId: userID},
-	)
-}
-
-func (p *Plugin) openCloseOrReopenIssueModal(c *serializer.UserContext, w http.ResponseWriter, r *http.Request) {
-	req := &serializer.OpenCreateCommentOrEditIssueModalRequestBody{}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		c.Log.WithError(err).Warnf("Error decoding the JSON body")
-		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: "Please provide a valid JSON object.", StatusCode: http.StatusBadRequest})
-		return
-	}
-
-	userID := r.Header.Get(constants.HeaderMattermostUserID)
-
-	post, appErr := p.API.GetPost(req.PostID)
-	if appErr != nil {
-		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s", req.PostID), StatusCode: http.StatusInternalServerError})
-		return
-	}
-	if post == nil {
-		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s : not found", req.PostID), StatusCode: http.StatusNotFound})
-		return
-	}
-
-	p.API.PublishWebSocketEvent(
-		wsEventCloseOrReopenIssue,
-		map[string]interface{}{
-			"channel_id": post.ChannelId,
-			"owner":      req.RepoOwner,
-			"repo":       req.RepoName,
-			"number":     req.IssueNumber,
-			"status":     req.Status,
-			"postId":     req.PostID,
-		},
-		&model.WebsocketBroadcast{UserId: userID},
-	)
-}
-
-func (p *Plugin) openIssueEditModal(c *serializer.UserContext, w http.ResponseWriter, r *http.Request) {
+func (p *Plugin) getIssueInfo(c *serializer.UserContext, w http.ResponseWriter, r *http.Request) {
 	req := &serializer.OpenCreateCommentOrEditIssueModalRequestBody{}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		c.Log.WithError(err).Warnf("Error decoding the JSON body")
@@ -1080,7 +1013,6 @@ func (p *Plugin) openIssueEditModal(c *serializer.UserContext, w http.ResponseWr
 		milestoneNumber = *issue.Milestone.Number
 	}
 
-	userID := r.Header.Get(constants.HeaderMattermostUserID)
 	post, appErr := p.API.GetPost(req.PostID)
 	if appErr != nil {
 		p.writeAPIError(w, &serializer.APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s", req.PostID), StatusCode: http.StatusInternalServerError})
@@ -1091,24 +1023,20 @@ func (p *Plugin) openIssueEditModal(c *serializer.UserContext, w http.ResponseWr
 		return
 	}
 
-	p.API.PublishWebSocketEvent(
-		wsEventCreateOrUpdateIssue,
-		map[string]interface{}{
-			"title":            *issue.Title,
-			"channel_id":       post.ChannelId,
-			"postId":           req.PostID,
-			"milestone_title":  milestoneTitle,
-			"milestone_number": milestoneNumber,
-			"assignees":        assignees,
-			"labels":           labels,
-			"description":      description,
-			"repo_full_name":   fmt.Sprintf("%s/%s", req.RepoOwner, req.RepoName),
-			"issue_number":     *issue.Number,
-		},
-		&model.WebsocketBroadcast{UserId: userID},
-	)
+	issueInfo := map[string]interface{}{
+		"title":            *issue.Title,
+		"channel_id":       post.ChannelId,
+		"postId":           req.PostID,
+		"milestone_title":  milestoneTitle,
+		"milestone_number": milestoneNumber,
+		"assignees":        assignees,
+		"labels":           labels,
+		"description":      description,
+		"repo_full_name":   fmt.Sprintf("%s/%s", req.RepoOwner, req.RepoName),
+		"issue_number":     *issue.Number,
+	}
 
-	p.writeJSON(w, issue)
+	p.writeJSON(w, issueInfo)
 }
 
 func (p *Plugin) getIssueByNumber(c *serializer.UserContext, w http.ResponseWriter, r *http.Request) {

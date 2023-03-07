@@ -211,47 +211,11 @@ export function getMilestoneOptions(repo) {
     };
 }
 
-export function attachCommentIssueModal(payload) {
+export function issueInfo(payload) {
     return async (dispatch, getState) => {
         let data;
         try {
-            data = await Client.attachCommentIssueModal(payload);
-        } catch (error) {
-            return {error};
-        }
-
-        const connected = await checkAndHandleNotConnected(data)(dispatch, getState);
-        if (!connected) {
-            return {error: data};
-        }
-
-        return {data};
-    };
-}
-
-export function editIssueModal(payload) {
-    return async (dispatch, getState) => {
-        let data;
-        try {
-            data = await Client.editIssueModal(payload);
-        } catch (error) {
-            return {error};
-        }
-
-        const connected = await checkAndHandleNotConnected(data)(dispatch, getState);
-        if (!connected) {
-            return {error: data};
-        }
-
-        return {data};
-    };
-}
-
-export function closeOrReopenIssueModal(payload) {
-    return async (dispatch, getState) => {
-        let data;
-        try {
-            data = await Client.closeOrReopenIssueModal(payload);
+            data = await Client.issueInfo(payload);
         } catch (error) {
             return {error};
         }
