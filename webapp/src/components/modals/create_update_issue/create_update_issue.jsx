@@ -22,7 +22,7 @@ const initialState = {
     repo: null,
     issueTitle: '',
     issueDescription: '',
-    channelID: '',
+    channelId: '',
     labels: [],
     assignees: [],
     milestone: null,
@@ -62,8 +62,6 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
             labels = [];
         }
 
-        this.setState({assignees});
-        this.setState({labels});
         this.setState({milestone: {
             value: milestone_number,
             label: milestone_title,
@@ -71,14 +69,16 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
         repo: {
             name: repo_full_name,
         },
-        channelID: channel_id,
+        assignees,
+        labels,
+        channelId: channel_id,
         issueDescription: description,
         issueTitle: title.substring(0, MAX_TITLE_LENGTH)});
     }
 
     /* eslint-disable react/no-did-update-set-state*/
     componentDidUpdate(prevProps) {
-        if (this.props.post && !this.props.messageData) {
+        if (this.props.post && !this.props.messageData && !prevProps.post) {
             this.setState({issueDescription: this.props.post.message});
         }
 
@@ -118,7 +118,7 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
             assignees: this.state.assignees,
             milestone: this.state.milestone && this.state.milestone.value,
             post_id: postId,
-            channel_id: this.state.channelID,
+            channel_id: this.state.channelId,
             issue_number,
         };
 
@@ -252,6 +252,7 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
                     onChange={this.handleIssueTitleChange}
                 />
                 {issueTitleValidationError}
+
                 {this.renderIssueAttributeSelectors()}
 
                 <Input

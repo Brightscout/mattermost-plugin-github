@@ -72,7 +72,7 @@ export default class AttachIssueModal extends PureComponent {
             owner,
             repo,
             number,
-            comment: this.props.post.message,
+            comment: this.state.comment,
             post_id: this.props.post.id,
             show_attached_message: true,
         };
@@ -106,9 +106,17 @@ export default class AttachIssueModal extends PureComponent {
         });
     };
 
+    /* eslint-disable react/no-did-update-set-state*/
+    componentDidUpdate(prevProps) {
+        if (this.props.post && !this.props.messageData && !prevProps.post) {
+            this.setState({comment: this.props.post.message});
+        }
+    }
+    /* eslint-enable */
+
     render() {
         const {error, submitting, comment, issueValue} = this.state;
-        const {visible, theme, messageData, post} = this.props;
+        const {visible, theme, messageData} = this.props;
         const style = getStyle(theme);
         if (!visible) {
             return null;
@@ -138,10 +146,9 @@ export default class AttachIssueModal extends PureComponent {
                 <Input
                     label='Message Attached to GitHub Issue'
                     type='textarea'
-                    isDisabled={false}
-                    value={post?.message}
+                    value={comment}
                     disabled={false}
-                    readOnly={true}
+                    onChange={this.handleIssueCommentChange}
                 />
             </div>
         );
