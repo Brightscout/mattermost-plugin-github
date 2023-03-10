@@ -106,13 +106,11 @@ export default class AttachIssueModal extends PureComponent {
         });
     };
 
-    /* eslint-disable react/no-did-update-set-state*/
     componentDidUpdate(prevProps) {
         if (this.props.post && !this.props.messageData && !prevProps.post) {
-            this.setState({comment: this.props.post.message});
+            this.setState({comment: this.props.post.message}); // eslint-disable-line react/no-did-update-set-state
         }
     }
-    /* eslint-enable */
 
     render() {
         const {error, submitting, comment, issueValue} = this.state;
