@@ -35,7 +35,7 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
         update: PropTypes.func.isRequired,
         close: PropTypes.func.isRequired,
         create: PropTypes.func.isRequired,
-        issueInfo: PropTypes.func.isRequired,
+        getIssueInfo: PropTypes.func.isRequired,
         post: PropTypes.object,
         theme: PropTypes.object.isRequired,
         visible: PropTypes.bool.isRequired,
@@ -49,7 +49,7 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
     }
 
     getIssueInfo = async () => {
-        const {repo_owner, repo_name, issue_number, postId} = this.props.messageData
+        const {repo_owner, repo_name, issue_number, postId} = this.props.messageData;
         const issueInfo = await this.props.getIssueInfo(repo_owner, repo_name, issue_number, postId);
         return issueInfo;
     }
