@@ -49,18 +49,15 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
     }
 
     getIssueInfo = async () => {
-        const issueInfo = await this.props.issueInfo(this.props.messageData);
+        const {repo_owner, repo_name, issue_number, postId} = this.props.messageData
+        const issueInfo = await this.props.getIssueInfo(repo_owner, repo_name, issue_number, postId);
         return issueInfo;
     }
 
     updateState(issueInfo) {
-        var {channel_id, title, description, assignees, labels, milestone_title, milestone_number, repo_full_name} = issueInfo ?? {};
-        if (!assignees) {
-            assignees = [];
-        }
-        if (!labels) {
-            labels = [];
-        }
+        const {channel_id, title, description, milestone_title, milestone_number, repo_full_name} = issueInfo ?? {};
+        const assignees = issueInfo?.assignees ?? [];
+        const labels = issueInfo?.labels ?? [];
 
         this.setState({milestone: {
             value: milestone_number,
@@ -82,7 +79,7 @@ export default class CreateOrUpdateIssueModal extends PureComponent {
             this.setState({issueDescription: this.props.post.message});
         }
 
-        if (this.props.messageData && this.props.messageData.repo_owner && !prevProps.visible && this.props.visible) {
+        if (this.props.messageData?.repo_owner && !prevProps.visible && this.props.visible) {
             this.getIssueInfo().then((issueInfo) => {
                 this.updateState(issueInfo.data);
             });

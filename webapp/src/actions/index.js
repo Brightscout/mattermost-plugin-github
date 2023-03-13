@@ -211,11 +211,11 @@ export function getMilestoneOptions(repo) {
     };
 }
 
-export function issueInfo(payload) {
+export function getIssueInfo(owner, repo, issueNumber, postID) {
     return async (dispatch, getState) => {
         let data;
         try {
-            data = await Client.issueInfo(payload);
+            data = await Client.getIssueInfo(owner, repo, issueNumber, postID);
         } catch (error) {
             return {error};
         }
