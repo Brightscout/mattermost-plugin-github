@@ -1238,13 +1238,13 @@ func (p *Plugin) getRepositories(c *UserContext, w http.ResponseWriter, r *http.
 		}
 	} else {
 		for {
-			repos, resp, err := githubClient.Repositories.ListByOrg(c.Ctx, org, &github.RepositoryListByOrgOptions{Sort: "full_name", ListOptions: opt})
-			if err != nil {
+			repos, resp, lErr := githubClient.Repositories.ListByOrg(c.Ctx, org, &github.RepositoryListByOrgOptions{Sort: "full_name", ListOptions: opt})
+			if lErr != nil {
 				if resp.StatusCode == 404 {
 					invalidOrgName = true
 					break
 				}
-				c.Log.WithError(err).Warnf("Failed to list repositories by org")
+				c.Log.WithError(lErr).Warnf("Failed to list repositories by org")
 				p.writeAPIError(w, &APIErrorResponse{Message: "Failed to fetch repositories", StatusCode: http.StatusInternalServerError})
 				return
 			}
