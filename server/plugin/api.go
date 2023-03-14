@@ -1246,7 +1246,7 @@ func (p *Plugin) getRepositories(c *UserContext, w http.ResponseWriter, r *http.
 					break
 				}
 
-				c.Log.WithError(lErr).Warnf("Failed to list repositories by org")
+				c.Log.WithError(lErr).Warnf("Failed to list repositories by organization")
 				p.writeAPIError(w, &APIErrorResponse{Message: "Failed to fetch repositories", StatusCode: http.StatusInternalServerError})
 				return
 			}
