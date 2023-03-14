@@ -1209,10 +1209,12 @@ func getRepositoryList(c *UserContext, userName string, githubClient *github.Cli
 		if err != nil {
 			return nil, err
 		}
+
 		allRepos = append(allRepos, repos...)
 		if resp.NextPage == 0 {
 			break
 		}
+
 		opt.Page = resp.NextPage
 	}
 
@@ -1227,7 +1229,6 @@ func (p *Plugin) getRepositories(c *UserContext, w http.ResponseWriter, r *http.
 	var allRepos []*github.Repository
 	var err error
 	opt := github.ListOptions{PerPage: 50}
-
 	invalidOrgName := false
 
 	if org == "" {
@@ -1240,10 +1241,11 @@ func (p *Plugin) getRepositories(c *UserContext, w http.ResponseWriter, r *http.
 		for {
 			repos, resp, lErr := githubClient.Repositories.ListByOrg(c.Ctx, org, &github.RepositoryListByOrgOptions{Sort: "full_name", ListOptions: opt})
 			if lErr != nil {
-				if resp.StatusCode == 404 {
+				if resp.StatusCode == http.StatusNotFound {
 					invalidOrgName = true
 					break
 				}
+
 				c.Log.WithError(lErr).Warnf("Failed to list repositories by org")
 				p.writeAPIError(w, &APIErrorResponse{Message: "Failed to fetch repositories", StatusCode: http.StatusInternalServerError})
 				return
