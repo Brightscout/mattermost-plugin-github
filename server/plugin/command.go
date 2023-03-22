@@ -342,6 +342,7 @@ func (p *Plugin) handleSubscribesAdd(_ *plugin.Context, args *model.CommandArgs,
 	if appErr != nil {
 		return appErr.Error()
 	}
+
 	owner, repo := parseOwnerAndRepo(parameters[0], baseURL)
 	previousSubscribedEvents, err := p.getSubscribedFeatures(args.ChannelId, owner, repo)
 	if err != nil {
@@ -371,7 +372,7 @@ func (p *Plugin) handleSubscribesAdd(_ *plugin.Context, args *model.CommandArgs,
 		}
 
 		if _, appErr = p.API.CreatePost(post); appErr != nil {
-			p.API.LogWarn("error while creating post", "post", post, "error", appErr.Error())
+			p.API.LogWarn("Error while creating post", "Post", post, "Error", appErr.Error())
 			return fmt.Sprintf("%s error creating the public post: %s", subscriptionSuccess, appErr.Error())
 		}
 		return ""
@@ -401,7 +402,7 @@ func (p *Plugin) handleSubscribesAdd(_ *plugin.Context, args *model.CommandArgs,
 	}
 
 	if _, appErr := p.API.CreatePost(post); appErr != nil {
-		p.API.LogWarn("error while creating post", "post", post, "error", appErr.Error())
+		p.API.LogWarn("Error while creating post", "Post", post, "Error", appErr.Error())
 		return fmt.Sprintf("%s error creating the public post: %s", msg, appErr.Error())
 	}
 
@@ -450,7 +451,7 @@ func (p *Plugin) handleUnsubscribe(_ *plugin.Context, args *model.CommandArgs, p
 	baseURL := config.getBaseURL()
 	user, appErr := p.API.GetUser(args.UserId)
 	if appErr != nil {
-		p.API.LogWarn("error while fetching user details", "error", appErr.Error())
+		p.API.LogWarn("Error while fetching user details", "Error", appErr.Error())
 		return fmt.Sprintf("error while fetching user details: %s", appErr.Error())
 	}
 
@@ -465,8 +466,8 @@ func (p *Plugin) handleUnsubscribe(_ *plugin.Context, args *model.CommandArgs, p
 		}
 
 		if _, appErr := p.API.CreatePost(post); appErr != nil {
-			p.API.LogWarn("error while creating post", "post", post, "error", appErr.Error())
-			return fmt.Sprintf("%s Though there was an error creating the public post: %s", unsubscriptionMessage, appErr.Error())
+			p.API.LogWarn("Error while creating post", "Post", post, "Error", appErr.Error())
+			return fmt.Sprintf("%s. Error creating the public post: %s", unsubscriptionMessage, appErr.Error())
 		}
 
 		return ""
@@ -481,8 +482,8 @@ func (p *Plugin) handleUnsubscribe(_ *plugin.Context, args *model.CommandArgs, p
 	}
 
 	if _, appErr := p.API.CreatePost(post); appErr != nil {
-		p.API.LogWarn("error while creating post", "post", post, "error", appErr.Error())
-		return fmt.Sprintf("%s Though there was an error creating the public post: %s", unsubscriptionMessage, appErr.Error())
+		p.API.LogWarn("Error while creating post", "Post", post, "Error", appErr.Error())
+		return fmt.Sprintf("%s. Error creating the public post: %s", unsubscriptionMessage, appErr.Error())
 	}
 
 	return ""
