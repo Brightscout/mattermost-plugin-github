@@ -324,7 +324,7 @@ func (p *Plugin) GetSubscribedChannelsForRepository(repo *github.Repository) []*
 	return subsToReturn
 }
 
-func (p *Plugin) Unsubscribe(channelID string, repo, owner string) error {
+func (p *Plugin) Unsubscribe(channelID, repo, owner string) error {
 	repoWithOwner := fmt.Sprintf("%s/%s", owner, repo)
 
 	subs, err := p.GetSubscriptions()

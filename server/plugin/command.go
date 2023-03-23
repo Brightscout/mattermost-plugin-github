@@ -39,10 +39,10 @@ var validFeatures = map[string]bool{
 }
 
 const (
-	subCommandListDeleteAll = "delete-all"
-	subCommandList          = "list"
-	subCommandDelete        = "delete"
-	subCommandAdd           = "add"
+	subCommandDeleteAll = "delete-all"
+	subCommandList      = "list"
+	subCommandDelete    = "delete"
+	subCommandAdd       = "add"
 )
 
 type Features string
@@ -209,7 +209,7 @@ func (p *Plugin) handleMuteCommand(_ *plugin.Context, args *model.CommandArgs, p
 			return "Invalid number of parameters supplied to " + command
 		}
 		return p.handleUnmute(args, parameters[1], userInfo)
-	case command == subCommandListDeleteAll:
+	case command == subCommandDeleteAll:
 		return p.handleUnmuteAll(args, userInfo)
 	default:
 		return fmt.Sprintf("Unknown subcommand %v", command)
@@ -375,6 +375,7 @@ func (p *Plugin) handleSubscribesAdd(_ *plugin.Context, args *model.CommandArgs,
 			p.API.LogWarn("Error while creating post", "Post", post, "Error", appErr.Error())
 			return fmt.Sprintf("%s error creating the public post: %s", subscriptionSuccess, appErr.Error())
 		}
+
 		return ""
 	}
 
@@ -409,7 +410,7 @@ func (p *Plugin) handleSubscribesAdd(_ *plugin.Context, args *model.CommandArgs,
 	return ""
 }
 
-func (p *Plugin) getSubscribedFeatures(channelID string, owner, repo string) (Features, error) {
+func (p *Plugin) getSubscribedFeatures(channelID, owner, repo string) (Features, error) {
 	var previousFeatures Features
 	subs, err := p.GetSubscriptionsByChannel(channelID)
 	if err != nil {
@@ -427,6 +428,7 @@ func (p *Plugin) getSubscribedFeatures(channelID string, owner, repo string) (Fe
 			return previousFeatures, nil
 		}
 	}
+
 	return previousFeatures, nil
 }
 func (p *Plugin) handleUnsubscribe(_ *plugin.Context, args *model.CommandArgs, parameters []string, _ *GitHubUserInfo) string {
@@ -455,35 +457,35 @@ func (p *Plugin) handleUnsubscribe(_ *plugin.Context, args *model.CommandArgs, p
 		return fmt.Sprintf("error while fetching user details: %s", appErr.Error())
 	}
 
-	unsubscriptionMessage := ""
+	unsubscribeMessage := ""
 	if repo == "" {
 		orgLink := baseURL + owner
-		unsubscriptionMessage = fmt.Sprintf("@%v unsubscribed this channel from [%s](%s)", user.Username, owner, orgLink)
+		unsubscribeMessage = fmt.Sprintf("@%v unsubscribed this channel from [%s](%s)", user.Username, owner, orgLink)
 		post := &model.Post{
 			ChannelId: args.ChannelId,
 			UserId:    p.BotUserID,
-			Message:   unsubscriptionMessage,
+			Message:   unsubscribeMessage,
 		}
 
 		if _, appErr := p.API.CreatePost(post); appErr != nil {
 			p.API.LogWarn("Error while creating post", "Post", post, "Error", appErr.Error())
-			return fmt.Sprintf("%s. Error creating the public post: %s", unsubscriptionMessage, appErr.Error())
+			return fmt.Sprintf("%s. Error creating the public post: %s", unsubscribeMessage, appErr.Error())
 		}
 
 		return ""
 	}
 
 	repoLink := baseURL + owner + "/" + repo
-	unsubscriptionMessage = fmt.Sprintf("@%v unsubscribed this channel from [%s/%s](%s)", user.Username, owner, repo, repoLink)
+	unsubscribeMessage = fmt.Sprintf("@%v unsubscribed this channel from [%s/%s](%s)", user.Username, owner, repo, repoLink)
 	post := &model.Post{
 		ChannelId: args.ChannelId,
 		UserId:    p.BotUserID,
-		Message:   unsubscriptionMessage,
+		Message:   unsubscribeMessage,
 	}
 
 	if _, appErr := p.API.CreatePost(post); appErr != nil {
 		p.API.LogWarn("Error while creating post", "Post", post, "Error", appErr.Error())
-		return fmt.Sprintf("%s. Error creating the public post: %s", unsubscriptionMessage, appErr.Error())
+		return fmt.Sprintf("%s. Error creating the public post: %s", unsubscribeMessage, appErr.Error())
 	}
 
 	return ""
@@ -860,7 +862,7 @@ func getAutocompleteData(config *Configuration) *model.AutocompleteData {
 
 	github.AddCommand(mute)
 
-	muteDeleteAll := model.NewAutocompleteData(subCommandListDeleteAll, "", "Unmute all muted GitHub users")
+	muteDeleteAll := model.NewAutocompleteData(subCommandDeleteAll, "", "Unmute all muted GitHub users")
 	mute.AddCommand(muteDeleteAll)
 
 	muteList := model.NewAutocompleteData(subCommandList, "", "List muted GitHub users")
