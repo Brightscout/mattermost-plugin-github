@@ -1235,6 +1235,7 @@ func getRepositoryListByOrg(c context.Context, org string, githubClient *github.
 
 			return nil, shouldFetchUserReposInsteadOfOrg, lErr
 		}
+
 		allRepos = append(allRepos, repos...)
 		if resp.NextPage == 0 {
 			break
