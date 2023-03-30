@@ -312,7 +312,6 @@ func (p *Plugin) getWebhookListForRepoOrOrg(githubClient *github.Client, repo, o
 	}
 
 	return isWebhook, nil
-
 }
 
 func (p *Plugin) handleSubscribesAdd(_ *plugin.Context, args *model.CommandArgs, parameters []string, userInfo *GitHubUserInfo) string {
