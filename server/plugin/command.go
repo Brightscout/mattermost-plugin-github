@@ -14,16 +14,18 @@ import (
 )
 
 const (
-	featureIssueCreation = "issue_creations"
-	featureIssues        = "issues"
-	featurePulls         = "pulls"
-	featurePullsMerged   = "pulls_merged"
-	featurePushes        = "pushes"
-	featureCreates       = "creates"
-	featureDeletes       = "deletes"
-	featureIssueComments = "issue_comments"
-	featurePullReviews   = "pull_reviews"
-	featureStars         = "stars"
+	featureIssueCreation          = "issue_creations"
+	featureIssues                 = "issues"
+	featurePulls                  = "pulls"
+	featurePullsMerged            = "pulls_merged"
+	featurePushes                 = "pushes"
+	featureCreates                = "creates"
+	featureDeletes                = "deletes"
+	featureIssueComments          = "issue_comments"
+	featurePullReviews            = "pull_reviews"
+	featureStars                  = "stars"
+	NoWebhookFoundMsg             = "\nNo webhook was found for this repository or organization. Would you like the webhook to be created? \nSuggested Command to create a webhook. `/github setup webhook`"
+	GithubListOptionsPerPageValue = 50
 )
 
 var validFeatures = map[string]bool{
@@ -270,7 +272,7 @@ func (p *Plugin) getWebhookListForRepoOrOrg(githubClient *github.Client, repo, o
 	isWebhook := false
 
 	opt := &github.ListOptions{
-		PerPage: 50,
+		PerPage: GithubListOptionsPerPageValue,
 	}
 
 	for {
@@ -376,7 +378,7 @@ func (p *Plugin) handleSubscribesAdd(_ *plugin.Context, args *model.CommandArgs,
 		}
 
 		if !isWebhook {
-			subOrgMsg += "\nNo webhook was found for this repository or organization. Would you like the webhook to be created? \nSuggested Command to create a webhook. `/github setup webhook`"
+			subOrgMsg += NoWebhookFoundMsg
 		}
 		return subOrgMsg
 	}
@@ -401,7 +403,7 @@ func (p *Plugin) handleSubscribesAdd(_ *plugin.Context, args *model.CommandArgs,
 	}
 
 	if !isWebhook {
-		msg += "\nNo webhook was found for this repository or organization. Would you like the webhook to be created? \nSuggested Command to create a webhook. `/github setup webhook`"
+		msg += NoWebhookFoundMsg
 	}
 
 	return msg
