@@ -24,7 +24,7 @@ const (
 	featureIssueComments          = "issue_comments"
 	featurePullReviews            = "pull_reviews"
 	featureStars                  = "stars"
-	NoWebhookFoundMsg             = "\nNo webhook was found for this repository or organization. Would you like the webhook to be created? \nSuggested Command to create a webhook. `/github setup webhook`"
+	NoWebhookFoundMsg             = "\nNo webhook was found for this repository or organization. To create one, enter the following slash command `/github setup webhook`"
 	GithubListOptionsPerPageValue = 50
 )
 
