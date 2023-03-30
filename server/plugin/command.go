@@ -14,17 +14,20 @@ import (
 )
 
 const (
-	featureIssueCreation          = "issue_creations"
-	featureIssues                 = "issues"
-	featurePulls                  = "pulls"
-	featurePullsMerged            = "pulls_merged"
-	featurePushes                 = "pushes"
-	featureCreates                = "creates"
-	featureDeletes                = "deletes"
-	featureIssueComments          = "issue_comments"
-	featurePullReviews            = "pull_reviews"
-	featureStars                  = "stars"
-	NoWebhookFoundMsg             = "\nNo webhook was found for this repository or organization. To create one, enter the following slash command `/github setup webhook`"
+	featureIssueCreation = "issue_creations"
+	featureIssues        = "issues"
+	featurePulls         = "pulls"
+	featurePullsMerged   = "pulls_merged"
+	featurePushes        = "pushes"
+	featureCreates       = "creates"
+	featureDeletes       = "deletes"
+	featureIssueComments = "issue_comments"
+	featurePullReviews   = "pull_reviews"
+	featureStars         = "stars"
+)
+
+const (
+	ErrorNoWebhookFoundMsg        = "\nNo webhook was found for this repository or organization. To create one, enter the following slash command `/github setup webhook`"
 	GithubListOptionsPerPageValue = 50
 )
 
@@ -286,7 +289,7 @@ func (p *Plugin) getWebhookListForRepoOrOrg(githubClient *github.Client, repo, o
 			githubHooks, githubResponse, err = githubClient.Repositories.ListHooks(ctx, owner, repo, opt)
 		}
 		if err != nil {
-			p.API.LogWarn("Not able to get the list of webhooks", "Owner", owner, "Repo", repo, "Error", err)
+			p.API.LogWarn("Not able to get the list of webhooks", "Owner", owner, "Repo", repo, "Error", err.Error())
 			// Breaking from the loop if the repo or org is not found
 			if strings.Contains(err.Error(), "404 Not Found") {
 				isWebhook = true
@@ -295,11 +298,13 @@ func (p *Plugin) getWebhookListForRepoOrOrg(githubClient *github.Client, repo, o
 				return isWebhook, err
 			}
 		}
+
 		for _, hook := range githubHooks {
 			if strings.Contains(hook.Config["url"].(string), p.getSiteURL()) {
 				isWebhook = true
 			}
 		}
+
 		if githubResponse.NextPage == 0 {
 			break
 		}
@@ -378,7 +383,7 @@ func (p *Plugin) handleSubscribesAdd(_ *plugin.Context, args *model.CommandArgs,
 		}
 
 		if !isWebhook {
-			subOrgMsg += NoWebhookFoundMsg
+			subOrgMsg += ErrorNoWebhookFoundMsg
 		}
 		return subOrgMsg
 	}
@@ -403,7 +408,7 @@ func (p *Plugin) handleSubscribesAdd(_ *plugin.Context, args *model.CommandArgs,
 	}
 
 	if !isWebhook {
-		msg += NoWebhookFoundMsg
+		msg += ErrorNoWebhookFoundMsg
 	}
 
 	return msg
