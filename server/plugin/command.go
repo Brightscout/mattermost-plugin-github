@@ -27,7 +27,7 @@ const (
 )
 
 const (
-	ErrorNoWebhookFoundMsg        = "\nNo webhook was found for this repository or organization. To create one, enter the following slash command `/github setup webhook`"
+	ErrorNoWebhookFound           = "\nNo webhook was found for this repository or organization. To create one, enter the following slash command `/github setup webhook`"
 	GithubListOptionsPerPageValue = 50
 )
 
@@ -273,7 +273,6 @@ func (p *Plugin) handleSubscriptionsList(_ *plugin.Context, args *model.CommandA
 
 func (p *Plugin) getWebhookListForRepoOrOrg(githubClient *github.Client, repo, owner string, ctx context.Context) (bool, error) {
 	isWebhook := false
-
 	opt := &github.ListOptions{
 		PerPage: GithubListOptionsPerPageValue,
 	}
@@ -288,6 +287,7 @@ func (p *Plugin) getWebhookListForRepoOrOrg(githubClient *github.Client, repo, o
 		} else {
 			githubHooks, githubResponse, err = githubClient.Repositories.ListHooks(ctx, owner, repo, opt)
 		}
+
 		if err != nil {
 			p.API.LogWarn("Not able to get the list of webhooks", "Owner", owner, "Repo", repo, "Error", err.Error())
 			// Breaking from the loop if the repo or org is not found
@@ -302,6 +302,7 @@ func (p *Plugin) getWebhookListForRepoOrOrg(githubClient *github.Client, repo, o
 		for _, hook := range githubHooks {
 			if strings.Contains(hook.Config["url"].(string), p.getSiteURL()) {
 				isWebhook = true
+				break
 			}
 		}
 
@@ -374,7 +375,7 @@ func (p *Plugin) handleSubscribesAdd(_ *plugin.Context, args *model.CommandArgs,
 			return err.Error()
 		}
 
-		var subOrgMsg = fmt.Sprintf("Successfully subscribed to organization %s.", owner)
+		subOrgMsg := fmt.Sprintf("Successfully subscribed to organization %s.", owner)
 
 		isWebhook, err := p.getWebhookListForRepoOrOrg(githubClient, repo, owner, ctx)
 		if err != nil {
@@ -382,7 +383,7 @@ func (p *Plugin) handleSubscribesAdd(_ *plugin.Context, args *model.CommandArgs,
 		}
 
 		if !isWebhook {
-			subOrgMsg += ErrorNoWebhookFoundMsg
+			subOrgMsg += ErrorNoWebhookFound
 		}
 		return subOrgMsg
 	}
@@ -407,7 +408,7 @@ func (p *Plugin) handleSubscribesAdd(_ *plugin.Context, args *model.CommandArgs,
 	}
 
 	if !isWebhook {
-		msg += ErrorNoWebhookFoundMsg
+		msg += ErrorNoWebhookFound
 	}
 
 	return msg
