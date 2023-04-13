@@ -316,7 +316,6 @@ func (p *Plugin) getWebhookListForRepoOrOrg(githubClient *github.Client, repo, o
 }
 
 func (p *Plugin) handleSubscribesAdd(_ *plugin.Context, args *model.CommandArgs, parameters []string, userInfo *GitHubUserInfo) string {
-
 	const errorNoWebhookFound = "\nNo webhook was found for this repository or organization. To create one, enter the following slash command `/github setup webhook`"
 	if len(parameters) == 0 {
 		return "Please specify a repository."
