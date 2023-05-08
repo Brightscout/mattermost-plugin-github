@@ -18,6 +18,7 @@ import (
 	"github.com/mattermost/mattermost-plugin-api/experimental/bot/logger"
 	"github.com/mattermost/mattermost-plugin-api/experimental/bot/poster"
 	"github.com/mattermost/mattermost-plugin-api/experimental/telemetry"
+	"github.com/mattermost/mattermost-plugin-github/server/plugin/internal/graphql"
 	"github.com/mattermost/mattermost-server/v6/model"
 	"github.com/mattermost/mattermost-server/v6/plugin"
 	"github.com/pkg/errors"
@@ -158,6 +159,11 @@ func (p *Plugin) GetGitHubClient(ctx context.Context, userID string) (*github.Cl
 func (p *Plugin) githubConnectUser(ctx context.Context, info *GitHubUserInfo) *github.Client {
 	tok := *info.Token
 	return p.githubConnectToken(tok)
+}
+
+func (p *Plugin) graphQLConnect(info *GitHubUserInfo) *graphql.Client {
+	conf := p.getConfiguration()
+	return graphql.NewClient(*info.Token, info.GitHubUsername, conf.GitHubOrg, conf.EnterpriseBaseURL)
 }
 
 func (p *Plugin) githubConnectToken(token oauth2.Token) *github.Client {
