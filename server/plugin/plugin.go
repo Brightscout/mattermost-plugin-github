@@ -18,13 +18,13 @@ import (
 	"github.com/mattermost/mattermost-plugin-api/experimental/bot/logger"
 	"github.com/mattermost/mattermost-plugin-api/experimental/bot/poster"
 	"github.com/mattermost/mattermost-plugin-api/experimental/telemetry"
-	"github.com/mattermost/mattermost-plugin-github/server/plugin/internal/graphql"
 	"github.com/mattermost/mattermost-server/v6/model"
 	"github.com/mattermost/mattermost-server/v6/plugin"
 	"github.com/pkg/errors"
 	"golang.org/x/oauth2"
 
 	root "github.com/mattermost/mattermost-plugin-github"
+	"github.com/mattermost/mattermost-plugin-github/server/plugin/internal/graphql"
 )
 
 const (
@@ -163,7 +163,7 @@ func (p *Plugin) githubConnectUser(ctx context.Context, info *GitHubUserInfo) *g
 
 func (p *Plugin) graphQLConnect(info *GitHubUserInfo) *graphql.Client {
 	conf := p.getConfiguration()
-	return graphql.NewClient(*info.Token, info.GitHubUsername, conf.GitHubOrg, conf.EnterpriseBaseURL)
+	return graphql.NewClient(p.API, *info.Token, info.GitHubUsername, conf.GitHubOrg, conf.EnterpriseBaseURL)
 }
 
 func (p *Plugin) githubConnectToken(token oauth2.Token) *github.Client {

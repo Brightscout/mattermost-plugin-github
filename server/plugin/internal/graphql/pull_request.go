@@ -20,6 +20,7 @@ func (p *PullRequestService) GetYourPrs() ([]*github.Issue, error) {
 		queryParamPRSearchQuery: githubv4.String(fmt.Sprintf("author:%s is:pr is:%s archived:false", p.client.username, githubv4.PullRequestStateOpen)),
 		queryParamPRsCursor:     (*githubv4.String)(nil),
 	}
+
 	if p.client.org != "" {
 		params[queryParamPRSearchQuery] = githubv4.String(fmt.Sprintf("org:%s %s", p.client.org, params[queryParamPRSearchQuery]))
 	}
