@@ -718,6 +718,7 @@ func (p *Plugin) getYourPrsData(c *UserContext) []*github.Issue {
 	prDetailResponse, err := graphQLClient.PullRequests.GetYourPrs()
 	if err != nil {
 		c.Log.WithError(err).Warnf("Failed to search for PRs")
+		return []*github.Issue{}
 	}
 
 	return prDetailResponse
@@ -966,19 +967,15 @@ func (p *Plugin) createIssueComment(c *UserContext, w http.ResponseWriter, r *ht
 }
 
 func (p *Plugin) getYourAssignmentsData(c *UserContext) []*github.Issue {
-	config := p.getConfiguration()
+	graphQLClient := p.graphQLConnect(c.GHInfo)
 
-	githubClient := p.githubConnectUser(c.Context.Ctx, c.GHInfo)
-
-	username := c.GHInfo.GitHubUsername
-	query := getYourAssigneeSearchQuery(username, config.GitHubOrg)
-	result, _, err := githubClient.Search.Issues(c.Ctx, query, &github.SearchOptions{})
+	assignmentResponse, err := graphQLClient.Issues.GetYourAssignment()
 	if err != nil {
-		c.Log.WithError(err).With(logger.LogContext{"query": query}).Warnf("Failed to search for assignments")
+		c.Log.WithError(err).Warnf("Failed to search for PRs")
 		return []*github.Issue{}
 	}
 
-	return result.Issues
+	return assignmentResponse
 }
 
 func (p *Plugin) getSidebarData(c *UserContext) *SidebarContent {

@@ -38,12 +38,14 @@ func (p *PullRequestService) GetYourPrs() ([]*github.Issue, error) {
 			repositoryURL := resp.PullRequest.Repository.URL.String()
 			htmlURL := resp.PullRequest.URL.String()
 			title := string(resp.PullRequest.Title)
+			createdAt := resp.PullRequest.CreatedAt.Time
+			updatedAt := resp.PullRequest.UpdatedAt.Time
 			pr := &github.Issue{
 				Number:        &prNumber,
 				RepositoryURL: &repositoryURL,
 				Title:         &title,
-				CreatedAt:     &resp.PullRequest.CreatedAt.Time,
-				UpdatedAt:     &resp.PullRequest.UpdatedAt.Time,
+				CreatedAt:     &createdAt,
+				UpdatedAt:     &updatedAt,
 				User: &github.User{
 					Login: (*string)(&resp.PullRequest.Author.Login),
 				},
