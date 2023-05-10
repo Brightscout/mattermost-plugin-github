@@ -971,7 +971,7 @@ func (p *Plugin) getYourAssignmentsData(c *UserContext) []*github.Issue {
 
 	assignmentResponse, err := graphQLClient.Issues.GetYourAssignment()
 	if err != nil {
-		c.Log.WithError(err).Warnf("Failed to search for PRs")
+		c.Log.WithError(err).Warnf("Failed to search for Assignments")
 		return []*github.Issue{}
 	}
 

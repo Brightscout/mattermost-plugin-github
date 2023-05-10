@@ -33,7 +33,7 @@ func (i *IssueService) GetYourAssignment() ([]*github.Issue, error) {
 			return nil, err
 		}
 
-		prOrIssue := &github.Issue{}
+		var prOrIssue *github.Issue
 		for _, resp := range query.Search.Nodes {
 			if resp.Issue.Number != 0 {
 				prNumber := int(resp.Issue.Number)
@@ -71,7 +71,6 @@ func (i *IssueService) GetYourAssignment() ([]*github.Issue, error) {
 					},
 					HTMLURL: &htmlURL,
 				}
-
 			}
 
 			res = append(res, prOrIssue)
