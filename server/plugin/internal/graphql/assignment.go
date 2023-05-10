@@ -2,6 +2,7 @@ package graphql
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/google/go-github/v41/github"
 	"github.com/shurcooL/githubv4"
@@ -27,7 +28,6 @@ func (i *IssueService) GetYourAssignment() ([]*github.Issue, error) {
 
 	var query assignmentSearchQuery
 	var res []*github.Issue
-
 	for {
 		if err := i.client.executeQuery(&query, params); err != nil {
 			return nil, err
@@ -35,44 +35,19 @@ func (i *IssueService) GetYourAssignment() ([]*github.Issue, error) {
 
 		var prOrIssue *github.Issue
 		for _, resp := range query.Search.Nodes {
-			if resp.Issue.Number != 0 {
-				prNumber := int(resp.Issue.Number)
-				repositoryURL := resp.Issue.Repository.URL.String()
-				htmlURL := resp.Issue.URL.String()
-				title := string(resp.Issue.Title)
-				createdAt := resp.Issue.CreatedAt.Time
-				updatedAt := resp.Issue.UpdatedAt.Time
-				prOrIssue = &github.Issue{
-					Number:        &prNumber,
-					RepositoryURL: &repositoryURL,
-					Title:         &title,
-					CreatedAt:     &createdAt,
-					UpdatedAt:     &updatedAt,
-					User: &github.User{
-						Login: (*string)(&resp.Issue.Author.Login),
-					},
-					HTMLURL: &htmlURL,
-				}
-			} else {
-				prNumber := int(resp.PullRequest.Number)
-				repositoryURL := resp.PullRequest.Repository.URL.String()
-				htmlURL := resp.PullRequest.URL.String()
-				title := string(resp.PullRequest.Title)
-				createdAt := resp.PullRequest.CreatedAt.Time
-				updatedAt := resp.PullRequest.UpdatedAt.Time
-				prOrIssue = &github.Issue{
-					Number:        &prNumber,
-					RepositoryURL: &repositoryURL,
-					Title:         &title,
-					CreatedAt:     &createdAt,
-					UpdatedAt:     &updatedAt,
-					User: &github.User{
-						Login: (*string)(&resp.PullRequest.Author.Login),
-					},
-					HTMLURL: &htmlURL,
-				}
+			response := resp.Issue
+			if response.Number == 0 {
+				response = resp.PullRequest
 			}
+			prNumber := int(response.Number)
+			repositoryURL := response.Repository.URL.String()
+			htmlURL := response.URL.String()
+			title := string(response.Title)
+			createdAt := response.CreatedAt.Time
+			updatedAt := response.UpdatedAt.Time
+			login := (string)(response.Author.Login)
 
+			prOrIssue = getPRorIssue(prNumber, repositoryURL, htmlURL, title, login, createdAt, updatedAt)
 			res = append(res, prOrIssue)
 		}
 
@@ -84,4 +59,18 @@ func (i *IssueService) GetYourAssignment() ([]*github.Issue, error) {
 	}
 
 	return res, nil
+}
+
+func getPRorIssue(prNumber int, repositoryURL, htmlURL, title, login string, createdAt, updatedAt time.Time) *github.Issue {
+	return &github.Issue{
+		Number:        &prNumber,
+		RepositoryURL: &repositoryURL,
+		Title:         &title,
+		CreatedAt:     &createdAt,
+		UpdatedAt:     &updatedAt,
+		User: &github.User{
+			Login: &login,
+		},
+		HTMLURL: &htmlURL,
+	}
 }
