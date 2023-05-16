@@ -697,19 +697,15 @@ func (p *Plugin) getUnreadsData(c *UserContext) []*FilteredNotification {
 }
 
 func (p *Plugin) getReviewsData(c *UserContext) []*github.Issue {
-	config := p.getConfiguration()
+	graphQLClient := p.graphQLConnect(c.GHInfo)
 
-	githubClient := p.githubConnectUser(c.Context.Ctx, c.GHInfo)
-	username := c.GHInfo.GitHubUsername
-
-	query := getReviewSearchQuery(username, config.GitHubOrg)
-	result, _, err := githubClient.Search.Issues(c.Ctx, query, &github.SearchOptions{})
+	reviewResponse, err := graphQLClient.PullRequests.GetReviewRequestedPrs()
 	if err != nil {
-		c.Log.WithError(err).With(logger.LogContext{"query": query}).Warnf("Failed to search for review")
+		c.Log.WithError(err).Warnf("Failed to search for review")
 		return []*github.Issue{}
 	}
 
-	return result.Issues
+	return reviewResponse
 }
 
 func (p *Plugin) getYourPrsData(c *UserContext) []*github.Issue {
