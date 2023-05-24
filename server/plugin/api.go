@@ -696,30 +696,6 @@ func (p *Plugin) getUnreadsData(c *UserContext) []*FilteredNotification {
 	return filteredNotifications
 }
 
-func (p *Plugin) getReviewsData(c *UserContext) []*github.Issue {
-	graphQLClient := p.graphQLConnect(c.GHInfo)
-
-	reviewResponse, err := graphQLClient.PullRequests.GetReviewRequestedPrs()
-	if err != nil {
-		c.Log.WithError(err).Warnf("Failed to search for review")
-		return []*github.Issue{}
-	}
-
-	return reviewResponse
-}
-
-func (p *Plugin) getYourPrsData(c *UserContext) []*github.Issue {
-	graphQLClient := p.graphQLConnect(c.GHInfo)
-
-	prDetailResponse, err := graphQLClient.PullRequests.GetYourPrs()
-	if err != nil {
-		c.Log.WithError(err).Warnf("Failed to search for PRs")
-		return []*github.Issue{}
-	}
-
-	return prDetailResponse
-}
-
 func (p *Plugin) getPrsDetails(c *UserContext, w http.ResponseWriter, r *http.Request) {
 	githubClient := p.githubConnectUser(c.Context.Ctx, c.GHInfo)
 
@@ -962,23 +938,24 @@ func (p *Plugin) createIssueComment(c *UserContext, w http.ResponseWriter, r *ht
 	p.writeJSON(w, result)
 }
 
-func (p *Plugin) getYourAssignmentsData(c *UserContext) []*github.Issue {
+func (p *Plugin) getLHSData(c *UserContext) ([]*github.Issue, []*github.Issue, []*github.Issue) {
 	graphQLClient := p.graphQLConnect(c.GHInfo)
 
-	assignmentResponse, err := graphQLClient.Issues.GetYourAssignment()
+	reviewResp, assignmentResp, openPrResp, err := graphQLClient.LHSRequests.GetLHSData()
 	if err != nil {
-		c.Log.WithError(err).Warnf("Failed to search for Assignments")
-		return []*github.Issue{}
+		c.Log.WithError(err).Warnf("Failed to search for LHS data")
+		return []*github.Issue{}, []*github.Issue{}, []*github.Issue{}
 	}
 
-	return assignmentResponse
+	return reviewResp, assignmentResp, openPrResp
 }
 
 func (p *Plugin) getSidebarData(c *UserContext) *SidebarContent {
+	reviweResp, assignmentResp, openPrResp := p.getLHSData(c)
 	return &SidebarContent{
-		Assignments: p.getYourAssignmentsData(c),
-		PRs:         p.getYourPrsData(c),
-		Reviews:     p.getReviewsData(c),
+		Assignments: assignmentResp,
+		PRs:         openPrResp,
+		Reviews:     reviweResp,
 		Unreads:     p.getUnreadsData(c),
 	}
 }

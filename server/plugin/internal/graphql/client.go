@@ -22,8 +22,7 @@ type Client struct {
 	username string
 	api      plugin.API
 
-	PullRequests *PullRequestService
-	Issues       *IssueService
+	LHSRequests *LHSRequestService
 }
 
 // NewClient creates and returns Client. Third party package that queries GraphQL is initialized here.
@@ -56,8 +55,7 @@ func NewClient(api plugin.API, token oauth2.Token, username, orgName, enterprise
 
 	common := service{client: &client}
 	// Set services
-	client.PullRequests = (*PullRequestService)(&common)
-	client.Issues = (*IssueService)(&common)
+	client.LHSRequests = (*LHSRequestService)(&common)
 
 	return &client
 }
