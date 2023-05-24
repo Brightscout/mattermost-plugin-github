@@ -17,22 +17,20 @@ const (
 	queryParamAssigneeQueryArg = "assigneeQueryArg"
 )
 
-type LHSRequestService service
-
-func (p *LHSRequestService) GetLHSData() ([]*github.Issue, []*github.Issue, []*github.Issue, error) {
+func (c *Client) GetLHSData() ([]*github.Issue, []*github.Issue, []*github.Issue, error) {
 	params := map[string]interface{}{
-		queryParamOpenPRQueryArg:    githubv4.String(fmt.Sprintf("author:%s is:pr is:%s archived:false", p.client.username, githubv4.PullRequestStateOpen)),
-		queryParamReviewQueryArg:    githubv4.String(fmt.Sprintf("review-requested:%s is:pr is:%s archived:false", p.client.username, githubv4.PullRequestStateOpen)),
-		queryParamAssigneeQueryArg:  githubv4.String(fmt.Sprintf("assignee:%s is:%s archived:false", p.client.username, githubv4.PullRequestStateOpen)),
+		queryParamOpenPRQueryArg:    githubv4.String(fmt.Sprintf("author:%s is:pr is:%s archived:false", c.username, githubv4.PullRequestStateOpen)),
+		queryParamReviewQueryArg:    githubv4.String(fmt.Sprintf("review-requested:%s is:pr is:%s archived:false", c.username, githubv4.PullRequestStateOpen)),
+		queryParamAssigneeQueryArg:  githubv4.String(fmt.Sprintf("assignee:%s is:%s archived:false", c.username, githubv4.PullRequestStateOpen)),
 		queryParamReviewCursor:      (*githubv4.String)(nil),
 		queryParamAssignmentsCursor: (*githubv4.String)(nil),
 		queryParamOpenPRsCursor:     (*githubv4.String)(nil),
 	}
 
-	if p.client.org != "" {
-		params[queryParamOpenPRQueryArg] = githubv4.String(fmt.Sprintf("org:%s %s", p.client.org, params[queryParamOpenPRQueryArg]))
-		params[queryParamReviewQueryArg] = githubv4.String(fmt.Sprintf("org:%s %s", p.client.org, params[queryParamReviewQueryArg]))
-		params[queryParamAssigneeQueryArg] = githubv4.String(fmt.Sprintf("org:%s %s", p.client.org, params[queryParamAssigneeQueryArg]))
+	if c.org != "" {
+		params[queryParamOpenPRQueryArg] = githubv4.String(fmt.Sprintf("org:%s %s", c.org, params[queryParamOpenPRQueryArg]))
+		params[queryParamReviewQueryArg] = githubv4.String(fmt.Sprintf("org:%s %s", c.org, params[queryParamReviewQueryArg]))
+		params[queryParamAssigneeQueryArg] = githubv4.String(fmt.Sprintf("org:%s %s", c.org, params[queryParamAssigneeQueryArg]))
 	}
 
 	var resultPR, resultAssignee, resultOpenPR []*github.Issue
@@ -43,12 +41,13 @@ func (p *LHSRequestService) GetLHSData() ([]*github.Issue, []*github.Issue, []*g
 			break
 		}
 
-		if err := p.client.executeQuery(&mainQuery, params); err != nil {
+		if err := c.executeQuery(&mainQuery, params); err != nil {
 			return nil, nil, nil, err
 		}
 
 		if !flagPR {
 			for _, resp := range mainQuery.PullRequest.Nodes {
+				resp := resp
 				pr := getPRorIssue(&resp, nil)
 				resultPR = append(resultPR, pr)
 			}
@@ -62,6 +61,7 @@ func (p *LHSRequestService) GetLHSData() ([]*github.Issue, []*github.Issue, []*g
 
 		if !flagAssignee {
 			for _, resp := range mainQuery.Assignee.Nodes {
+				resp := resp
 				prOrIssue := getPRorIssue(nil, &resp)
 				resultAssignee = append(resultAssignee, prOrIssue)
 			}
@@ -75,6 +75,7 @@ func (p *LHSRequestService) GetLHSData() ([]*github.Issue, []*github.Issue, []*g
 
 		if !flagOpenPr {
 			for _, resp := range mainQuery.OpenPullRequest.Nodes {
+				resp := resp
 				pr := getPRorIssue(&resp, nil)
 				resultOpenPR = append(resultOpenPR, pr)
 			}

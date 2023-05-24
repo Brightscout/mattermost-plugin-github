@@ -11,18 +11,12 @@ import (
 	"golang.org/x/oauth2"
 )
 
-type service struct {
-	client *Client
-}
-
 // Client encapsulates the third party package that communicates with Github GraphQL API
 type Client struct {
 	client   *githubv4.Client
 	org      string
 	username string
 	api      plugin.API
-
-	LHSRequests *LHSRequestService
 }
 
 // NewClient creates and returns Client. Third party package that queries GraphQL is initialized here.
@@ -52,10 +46,6 @@ func NewClient(api plugin.API, token oauth2.Token, username, orgName, enterprise
 			api:      api,
 		}
 	}
-
-	common := service{client: &client}
-	// Set services
-	client.LHSRequests = (*LHSRequestService)(&common)
 
 	return &client
 }
