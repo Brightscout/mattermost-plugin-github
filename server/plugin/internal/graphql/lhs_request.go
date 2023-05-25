@@ -13,14 +13,14 @@ const (
 	queryParamOpenPRsCursor     = "openPrsCursor"
 
 	queryParamOpenPRQueryArg   = "prOpenQueryArg"
-	queryParamReviewQueryArg   = "prReviewQueryArg"
+	queryParamReviewPRQueryArg = "prReviewQueryArg"
 	queryParamAssigneeQueryArg = "assigneeQueryArg"
 )
 
 func (c *Client) GetLHSData() ([]*github.Issue, []*github.Issue, []*github.Issue, error) {
 	params := map[string]interface{}{
 		queryParamOpenPRQueryArg:    githubv4.String(fmt.Sprintf("author:%s is:pr is:%s archived:false", c.username, githubv4.PullRequestStateOpen)),
-		queryParamReviewQueryArg:    githubv4.String(fmt.Sprintf("review-requested:%s is:pr is:%s archived:false", c.username, githubv4.PullRequestStateOpen)),
+		queryParamReviewPRQueryArg:  githubv4.String(fmt.Sprintf("review-requested:%s is:pr is:%s archived:false", c.username, githubv4.PullRequestStateOpen)),
 		queryParamAssigneeQueryArg:  githubv4.String(fmt.Sprintf("assignee:%s is:%s archived:false", c.username, githubv4.PullRequestStateOpen)),
 		queryParamReviewCursor:      (*githubv4.String)(nil),
 		queryParamAssignmentsCursor: (*githubv4.String)(nil),
@@ -29,15 +29,15 @@ func (c *Client) GetLHSData() ([]*github.Issue, []*github.Issue, []*github.Issue
 
 	if c.org != "" {
 		params[queryParamOpenPRQueryArg] = githubv4.String(fmt.Sprintf("org:%s %s", c.org, params[queryParamOpenPRQueryArg]))
-		params[queryParamReviewQueryArg] = githubv4.String(fmt.Sprintf("org:%s %s", c.org, params[queryParamReviewQueryArg]))
+		params[queryParamReviewPRQueryArg] = githubv4.String(fmt.Sprintf("org:%s %s", c.org, params[queryParamReviewPRQueryArg]))
 		params[queryParamAssigneeQueryArg] = githubv4.String(fmt.Sprintf("org:%s %s", c.org, params[queryParamAssigneeQueryArg]))
 	}
 
 	var resultPR, resultAssignee, resultOpenPR []*github.Issue
-	flagPR, flagAssignee, flagOpenPr := false, false, false
+	flagPR, flagAssignee, flagOpenPR := false, false, false
 
 	for {
-		if flagPR && flagAssignee && flagOpenPr {
+		if flagPR && flagAssignee && flagOpenPR {
 			break
 		}
 
@@ -73,15 +73,15 @@ func (c *Client) GetLHSData() ([]*github.Issue, []*github.Issue, []*github.Issue
 			params[queryParamAssignmentsCursor] = githubv4.NewString(mainQuery.Assignee.PageInfo.EndCursor)
 		}
 
-		if !flagOpenPr {
+		if !flagOpenPR {
 			for _, resp := range mainQuery.OpenPullRequest.Nodes {
 				resp := resp
-				pr := getPRorIssue(&resp, nil)
+				pr := getPROrIssue(&resp, nil)
 				resultOpenPR = append(resultOpenPR, pr)
 			}
 
 			if !mainQuery.OpenPullRequest.PageInfo.HasNextPage {
-				flagOpenPr = true
+				flagOpenPR = true
 			}
 
 			params[queryParamOpenPRsCursor] = githubv4.NewString(mainQuery.OpenPullRequest.PageInfo.EndCursor)
@@ -91,7 +91,7 @@ func (c *Client) GetLHSData() ([]*github.Issue, []*github.Issue, []*github.Issue
 	return resultPR, resultAssignee, resultOpenPR, nil
 }
 
-func getPRorIssue(prResp *prSearchNodes, assignmentResp *assignmentSearchNodes) *github.Issue {
+func getPROrIssue(prResp *prSearchNodes, assignmentResp *assignmentSearchNodes) *github.Issue {
 	resp := prResp.PullRequest
 	if assignmentResp != nil {
 		if assignmentResp.Issue.Number == 0 {

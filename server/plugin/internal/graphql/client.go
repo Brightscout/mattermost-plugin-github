@@ -34,7 +34,7 @@ func NewClient(api plugin.API, token oauth2.Token, username, orgName, enterprise
 	} else {
 		baseURL, err := url.Parse(enterpriseBaseURL)
 		if err != nil {
-			api.LogDebug("Not able to parse the URL", "Error", err)
+			api.LogDebug("Not able to parse the URL", "Error", err.Error())
 		}
 
 		baseURL.Path = path.Join(baseURL.Path, "api", "graphql")

@@ -941,20 +941,20 @@ func (p *Plugin) createIssueComment(c *UserContext, w http.ResponseWriter, r *ht
 func (p *Plugin) getLHSData(c *UserContext) ([]*github.Issue, []*github.Issue, []*github.Issue) {
 	graphQLClient := p.graphQLConnect(c.GHInfo)
 
-	reviewResp, assignmentResp, openPrResp, err := graphQLClient.GetLHSData()
+	reviewResp, assignmentResp, openPRResp, err := graphQLClient.GetLHSData()
 	if err != nil {
 		c.Log.WithError(err).Warnf("Failed to search for LHS data")
 		return []*github.Issue{}, []*github.Issue{}, []*github.Issue{}
 	}
 
-	return reviewResp, assignmentResp, openPrResp
+	return reviewResp, assignmentResp, openPRResp
 }
 
 func (p *Plugin) getSidebarData(c *UserContext) *SidebarContent {
-	reviweResp, assignmentResp, openPrResp := p.getLHSData(c)
+	reviweResp, assignmentResp, openPRResp := p.getLHSData(c)
 	return &SidebarContent{
 		Assignments: assignmentResp,
-		PRs:         openPrResp,
+		PRs:         openPRResp,
 		Reviews:     reviweResp,
 		Unreads:     p.getUnreadsData(c),
 	}

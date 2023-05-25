@@ -66,6 +66,7 @@ require (
 	github.com/segmentio/backo-go v1.0.1 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/shurcooL/githubv4 v0.0.0-20230424031643-6cea62ecd5a9
+	github.com/shurcooL/graphql v0.0.0-20220606043923-3cf50f8a0a29 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/stretchr/objx v0.4.0 // indirect
@@ -92,5 +93,3 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-require github.com/shurcooL/graphql v0.0.0-20220606043923-3cf50f8a0a29 // indirect
