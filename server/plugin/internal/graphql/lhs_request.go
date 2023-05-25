@@ -48,7 +48,7 @@ func (c *Client) GetLHSData() ([]*github.Issue, []*github.Issue, []*github.Issue
 		if !flagPR {
 			for _, resp := range mainQuery.PullRequest.Nodes {
 				resp := resp
-				pr := getPRorIssue(&resp, nil)
+				pr := getPROrIssue(&resp, nil)
 				resultPR = append(resultPR, pr)
 			}
 
@@ -62,7 +62,7 @@ func (c *Client) GetLHSData() ([]*github.Issue, []*github.Issue, []*github.Issue
 		if !flagAssignee {
 			for _, resp := range mainQuery.Assignee.Nodes {
 				resp := resp
-				prOrIssue := getPRorIssue(nil, &resp)
+				prOrIssue := getPROrIssue(nil, &resp)
 				resultAssignee = append(resultAssignee, prOrIssue)
 			}
 
