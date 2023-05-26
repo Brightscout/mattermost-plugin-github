@@ -938,10 +938,11 @@ func (p *Plugin) createIssueComment(c *UserContext, w http.ResponseWriter, r *ht
 	p.writeJSON(w, result)
 }
 
-func (p *Plugin) getLHSData(c *UserContext) ([]*github.Issue, []*github.Issue, []*github.Issue) {
+func (p *Plugin) getLHSData(c *UserContext) (reviewResp []*github.Issue, assignmentResp []*github.Issue, openPRResp []*github.Issue) {
+	var err error
 	graphQLClient := p.graphQLConnect(c.GHInfo)
 
-	reviewResp, assignmentResp, openPRResp, err := graphQLClient.GetLHSData()
+	reviewResp, assignmentResp, openPRResp, err = graphQLClient.GetLHSData()
 	if err != nil {
 		c.Log.WithError(err).Warnf("Failed to search for LHS data")
 		return []*github.Issue{}, []*github.Issue{}, []*github.Issue{}

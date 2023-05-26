@@ -19,7 +19,7 @@ type Client struct {
 	api      plugin.API
 }
 
-// NewClient creates and returns Client. Third party package that queries GraphQL is initialized here.
+// NewClient creates and returns Client. The third party package that queries GraphQL is initialized here.
 func NewClient(api plugin.API, token oauth2.Token, username, orgName, enterpriseBaseURL string) *Client {
 	ts := oauth2.StaticTokenSource(&token)
 	httpClient := oauth2.NewClient(context.Background(), ts)
@@ -35,6 +35,7 @@ func NewClient(api plugin.API, token oauth2.Token, username, orgName, enterprise
 		baseURL, err := url.Parse(enterpriseBaseURL)
 		if err != nil {
 			api.LogDebug("Not able to parse the URL", "Error", err.Error())
+			return nil
 		}
 
 		baseURL.Path = path.Join(baseURL.Path, "api", "graphql")
