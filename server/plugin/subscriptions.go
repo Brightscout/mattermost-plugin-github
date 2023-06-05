@@ -58,7 +58,7 @@ func (s SubscriptionFlags) String() string {
 	}
 
 	if len(s.ExcludeRepository) > 0 {
-		flag := "--" + flagExcludeRepository + " " + strings.Join(s.ExcludeRepository[:], ",")
+		flag := "--" + flagExcludeRepository + " " + strings.Join(s.ExcludeRepository, ",")
 		flags = append(flags, flag)
 	}
 

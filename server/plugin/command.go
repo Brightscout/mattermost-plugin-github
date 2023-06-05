@@ -326,10 +326,8 @@ func (p *Plugin) handleSubscribesAdd(_ *plugin.Context, args *model.CommandArgs,
 		}
 
 		return fmt.Sprintf("Successfully subscribed to organization %s.", owner)
-	} else {
-		if len(flags.ExcludeRepository) > 0 {
-			return "Exclude repository feature is only available to subscriptions of an organization."
-		}
+	} else if len(flags.ExcludeRepository) > 0 {
+		return "Exclude repository feature is only available to subscriptions of an organization."
 	}
 
 	if err := p.Subscribe(ctx, githubClient, args.UserId, owner, repo, args.ChannelId, features, flags); err != nil {
