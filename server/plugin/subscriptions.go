@@ -138,7 +138,7 @@ func (s *Subscription) RenderStyle() string {
 	return s.Flags.RenderStyle
 }
 
-func (s *Subscription) channelExcludedForRepo(repo *github.Repository) bool {
+func (s *Subscription) excludedRepoForSub(repo *github.Repository) bool {
 	for _, repository := range s.Flags.ExcludeRepository {
 		if repository == *repo.FullName {
 			return true
@@ -336,7 +336,7 @@ func (p *Plugin) GetSubscribedChannelsForRepository(repo *github.Repository) []*
 		if repo.GetPrivate() && !p.permissionToRepo(sub.CreatorID, name) {
 			continue
 		}
-		if sub.channelExcludedForRepo(repo) {
+		if sub.excludedRepoForSub(repo) {
 			continue
 		}
 		subsToReturn = append(subsToReturn, sub)
