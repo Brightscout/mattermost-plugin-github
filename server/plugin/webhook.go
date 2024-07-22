@@ -592,18 +592,85 @@ func (p *Plugin) postIssueEvent(event *github.IssuesEvent) {
 
 		post := p.makeBotPost(renderedMessage, "")
 
+		pluginURL := *p.client.Configuration.GetConfig().ServiceSettings.SiteURL + "/" + "plugins" + "/" + Manifest.Id
+
 		if action == actionOpened {
-			post.Type = "custom_git_issue"
-			post.Props = map[string]interface{}{
-				titleForProps:       *issue.Title,
-				issueURLForProps:    *issue.HTMLURL,
-				issueNumberForProps: *issue.Number,
-				descriptionForProps: description,
-				assigneesForProps:   assignees,
-				labelsForProps:      labels,
-				repoOwnerForProps:   *repo.Owner.Login,
-				repoNameForProps:    *repo.Name,
-				issueStatus:         statusClose,
+			fields := []*model.SlackAttachmentField{}
+
+			if len(assignees) > 0 {
+				fields = append(fields, &model.SlackAttachmentField{
+					Title: "Assignees",
+					Value: strings.Join(assignees, ", "),
+					Short: true,
+				})
+			}
+
+			if len(labels) > 0 {
+				fields = append(fields, &model.SlackAttachmentField{
+					Title: "Labels",
+					Value: strings.Join(labels, ", "),
+					Short: true,
+				})
+			}
+
+			post.Props = model.StringInterface{
+				"attachments": []*model.SlackAttachment{
+					{
+						Title:     *issue.Title,
+						TitleLink: *issue.HTMLURL,
+						Text:      fmt.Sprintf("Issue #%d: %s", *issue.Number, description),
+						Actions: []*model.PostAction{
+							{
+								Name: "Comment",
+								Integration: &model.PostActionIntegration{
+									// Context: model.StringInterface{},
+									Context: map[string]interface{}{
+										"repo_owner":   repo.GetOwner().GetLogin(),
+										"repo_name":    repo.GetName(),
+										"issue_number": issue.GetNumber(),
+										"issue_id":     issue.GetID(),
+										"postId":       post.Id,
+										"status":       *issue.State,
+										"channel_id":   sub.ChannelID,
+									},
+									URL: fmt.Sprintf("%s/api/v1/open-comment-modal", pluginURL),
+								},
+								Style: "primary",
+							},
+							{
+								Name: "Edit",
+								Integration: &model.PostActionIntegration{
+									Context: map[string]interface{}{
+										"repo_owner":   repo.GetOwner().GetLogin(),
+										"repo_name":    repo.GetName(),
+										"issue_number": issue.GetNumber(),
+										"issue_id":     issue.GetID(),
+										"postId":       post.Id,
+										"status":       *issue.State,
+										"channel_id":   sub.ChannelID,
+									},
+									URL: fmt.Sprintf("%s/api/v1/open-edit-modal", pluginURL),
+								},
+							},
+							{
+								Name: "Close",
+								Integration: &model.PostActionIntegration{
+									Context: map[string]interface{}{
+										"repo_owner":   repo.GetOwner().GetLogin(),
+										"repo_name":    repo.GetName(),
+										"issue_number": issue.GetNumber(),
+										"issue_id":     issue.GetID(),
+										"postId":       post.Id,
+										"status":       *issue.State,
+										"channel_id":   sub.ChannelID,
+									},
+									URL: fmt.Sprintf("%s/api/v1/open-status-modal", pluginURL),
+								},
+							},
+						},
+						Fields: fields,
+					},
+				},
 			}
 		}
 		repoName := strings.ToLower(repo.GetFullName())

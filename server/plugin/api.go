@@ -124,6 +124,9 @@ func (p *Plugin) initializeAPI() {
 	apiRouter.HandleFunc("/issue", p.checkAuth(p.attachUserContext(p.getIssueByNumber), ResponseTypePlain)).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/pr", p.checkAuth(p.attachUserContext(p.getPrByNumber), ResponseTypePlain)).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/lhs-content", p.checkAuth(p.attachUserContext(p.getSidebarContent), ResponseTypePlain)).Methods(http.MethodGet)
+	apiRouter.HandleFunc("/open-comment-modal", p.handleOpenCommentModal).Methods(http.MethodPost)
+	apiRouter.HandleFunc("/open-edit-modal", p.checkAuth(p.attachUserContext(p.handleOpenEditModal), ResponseTypePlain)).Methods(http.MethodPost)
+	apiRouter.HandleFunc("/open-status-modal", p.checkAuth(p.attachUserContext(p.handleOpenStatusModal), ResponseTypePlain)).Methods(http.MethodPost)
 
 	apiRouter.HandleFunc("/config", checkPluginRequest(p.getConfig)).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/token", checkPluginRequest(p.getToken)).Methods(http.MethodGet)
@@ -863,7 +866,7 @@ func (p *Plugin) createIssueComment(c *UserContext, w http.ResponseWriter, r *ht
 		rootID = post.RootId
 	}
 
-	permalinkReplyMessage := fmt.Sprintf("Comment attached to GitHub issue [#%v](%v) from a [Message](%v)", req.Number, result.GetHTMLURL(), permalink)
+	permalinkReplyMessage := fmt.Sprintf("Comment attached to GitHub issue [#%v](%v)", req.Number, result.GetHTMLURL())
 	if req.ShowAttachedMessage {
 		permalinkReplyMessage = fmt.Sprintf("[Message](%v) attached to GitHub issue [#%v](%v)", permalink, req.Number, result.GetHTMLURL())
 	}
@@ -1321,7 +1324,6 @@ func (p *Plugin) updateIssue(c *UserContext, w http.ResponseWriter, r *http.Requ
 	}
 
 	var post *model.Post
-	permalink := ""
 	if issue.PostID != "" {
 		var appErr *model.AppError
 		post, appErr = p.API.GetPost(issue.PostID)
@@ -1334,7 +1336,6 @@ func (p *Plugin) updateIssue(c *UserContext, w http.ResponseWriter, r *http.Requ
 			p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to load the post %s : not found", issue.PostID), StatusCode: http.StatusNotFound})
 			return
 		}
-		permalink = p.getPermaLink(issue.PostID)
 	}
 
 	githubIssue := &github.IssueRequest{
@@ -1392,7 +1393,6 @@ func (p *Plugin) updateIssue(c *UserContext, w http.ResponseWriter, r *http.Requ
 			rootID = post.RootId
 		}
 		channelID = post.ChannelId
-		message += fmt.Sprintf(" from a [message](%s)", permalink)
 	}
 
 	reply := &model.Post{
@@ -1620,6 +1620,111 @@ func (p *Plugin) getToken(w http.ResponseWriter, r *http.Request) {
 	}
 
 	p.writeJSON(w, info.Token)
+}
+
+func (p *Plugin) handleOpenEditModal(c *UserContext, w http.ResponseWriter, r *http.Request) {
+	response := &model.PostActionIntegrationResponse{}
+	decoder := json.NewDecoder(r.Body)
+	postActionIntegrationRequest := &model.PostActionIntegrationRequest{}
+	if err := decoder.Decode(&postActionIntegrationRequest); err != nil {
+		p.API.LogError("Error decoding PostActionIntegrationRequest params: ", err.Error())
+		p.returnPostActionIntegrationResponse(w, response)
+		return
+	}
+
+	repoName := postActionIntegrationRequest.Context["repo_name"]
+	repoOwner := postActionIntegrationRequest.Context["repo_owner"]
+	issueNumber := postActionIntegrationRequest.Context["issue_number"]
+	status := postActionIntegrationRequest.Context["status"]
+	channelID := postActionIntegrationRequest.Context["channel_id"]
+
+	p.client.Frontend.PublishWebSocketEvent(
+		"edit_modal",
+		map[string]interface{}{
+			"repo_name":    repoName,
+			"repo_owner":   repoOwner,
+			"issue_number": issueNumber,
+			"postId":       postActionIntegrationRequest.PostId,
+			"status":       status,
+			"channel_id":   channelID,
+		},
+		&model.WebsocketBroadcast{UserId: postActionIntegrationRequest.UserId},
+	)
+
+	p.returnPostActionIntegrationResponse(w, response)
+}
+
+func (p *Plugin) returnPostActionIntegrationResponse(w http.ResponseWriter, res *model.PostActionIntegrationResponse) {
+	w.Header().Set("Content-Type", "application/json")
+
+	if err := json.NewEncoder(w).Encode(res); err != nil {
+		p.API.LogWarn("failed to write PostActionIntegrationResponse", "Error", err.Error())
+	}
+}
+
+func (p *Plugin) handleOpenStatusModal(c *UserContext, w http.ResponseWriter, r *http.Request) {
+	response := &model.PostActionIntegrationResponse{}
+	decoder := json.NewDecoder(r.Body)
+	postActionIntegrationRequest := &model.PostActionIntegrationRequest{}
+	if err := decoder.Decode(&postActionIntegrationRequest); err != nil {
+		p.API.LogError("Error decoding PostActionIntegrationRequest params: ", err.Error())
+		p.returnPostActionIntegrationResponse(w, response)
+		return
+	}
+
+	repoName := postActionIntegrationRequest.Context["repo_name"]
+	repoOwner := postActionIntegrationRequest.Context["repo_owner"]
+	issueNumber := postActionIntegrationRequest.Context["issue_number"]
+	status := postActionIntegrationRequest.Context["status"]
+	channelID := postActionIntegrationRequest.Context["channel_id"]
+
+	p.client.Frontend.PublishWebSocketEvent(
+		"status_modal",
+		map[string]interface{}{
+			"repo_name":    repoName,
+			"repo_owner":   repoOwner,
+			"issue_number": issueNumber,
+			"postId":       postActionIntegrationRequest.PostId,
+			"status":       status,
+			"channel_id":   channelID,
+		},
+		&model.WebsocketBroadcast{UserId: postActionIntegrationRequest.UserId},
+	)
+
+	p.returnPostActionIntegrationResponse(w, response)
+}
+
+func (p *Plugin) handleOpenCommentModal(w http.ResponseWriter, r *http.Request) {
+	response := &model.PostActionIntegrationResponse{}
+	decoder := json.NewDecoder(r.Body)
+	postActionIntegrationRequest := &model.PostActionIntegrationRequest{}
+
+	if err := decoder.Decode(&postActionIntegrationRequest); err != nil {
+		p.API.LogError("Error decoding PostActionIntegrationRequest params: ", err.Error())
+		p.returnPostActionIntegrationResponse(w, response)
+		return
+	}
+
+	repoName := postActionIntegrationRequest.Context["repo_name"]
+	repoOwner := postActionIntegrationRequest.Context["repo_owner"]
+	issueNumber := postActionIntegrationRequest.Context["issue_number"]
+	status := postActionIntegrationRequest.Context["status"]
+	channelID := postActionIntegrationRequest.Context["channel_id"]
+
+	p.client.Frontend.PublishWebSocketEvent(
+		"comment_modal",
+		map[string]interface{}{
+			"repo_name":    repoName,
+			"repo_owner":   repoOwner,
+			"issue_number": issueNumber,
+			"postId":       postActionIntegrationRequest.PostId,
+			"status":       status,
+			"channel_id":   channelID,
+		},
+		&model.WebsocketBroadcast{UserId: postActionIntegrationRequest.UserId},
+	)
+
+	p.returnPostActionIntegrationResponse(w, response)
 }
 
 // parseRepo parses the owner & repository name from the repo query parameter

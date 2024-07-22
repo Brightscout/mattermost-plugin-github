@@ -15,7 +15,7 @@ import GithubIssue from './components/github_issue';
 import Reducer from './reducers';
 import Client from './client';
 import {getConnected, setShowRHSAction} from './actions';
-import {handleConnect, handleDisconnect, handleConfigurationUpdate, handleOpenCreateOrUpdateIssueModal, handleReconnect, handleRefresh} from './websocket';
+import {handleConnect, handleDisconnect, handleConfigurationUpdate, handleOpenCreateOrUpdateIssueModal, handleOpenCreateCommentOnIssueModal, handleOpenCloseOrReopenIssueModal, handleReconnect, handleRefresh, handleOpenEditIssueModal} from './websocket';
 import {getServerRoute} from './selectors';
 import manifest from './manifest';
 
@@ -49,6 +49,9 @@ class PluginClass {
         registry.registerWebSocketEventHandler(`custom_${pluginId}_config_update`, handleConfigurationUpdate(store));
         registry.registerWebSocketEventHandler(`custom_${pluginId}_refresh`, handleRefresh(store));
         registry.registerWebSocketEventHandler(`custom_${pluginId}_createIssue`, handleOpenCreateOrUpdateIssueModal(store));
+        registry.registerWebSocketEventHandler(`custom_${pluginId}_comment_modal`, handleOpenCreateCommentOnIssueModal(store));
+        registry.registerWebSocketEventHandler(`custom_${pluginId}_edit_modal`, handleOpenEditIssueModal(store));
+        registry.registerWebSocketEventHandler(`custom_${pluginId}_status_modal`, handleOpenCloseOrReopenIssueModal(store));
         registry.registerPostTypeComponent('custom_git_issue', GithubIssue);
 
         registry.registerReconnectHandler(handleReconnect(store));

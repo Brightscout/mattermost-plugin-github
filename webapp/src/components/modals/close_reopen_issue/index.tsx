@@ -31,7 +31,7 @@ const CloseOrReopenIssueModal = ({theme}: {theme: Theme}) => {
             e.preventDefault();
         }
 
-        const currentStatus = messageData?.status === 'Close' ? statusReason : 'reopened';
+        const currentStatus = messageData?.status === 'open' ? statusReason : 'reopened';
         const issue = {
             channel_id: messageData.channel_id,
             issue_comment: comment,
@@ -39,10 +39,9 @@ const CloseOrReopenIssueModal = ({theme}: {theme: Theme}) => {
             repo: messageData.repo_name,
             number: messageData.issue_number,
             owner: messageData.repo_owner,
-            status: messageData.status,
+            status: messageData.status == 'open' ? 'Close' : 'Reopen',
             postId: messageData.postId,
         };
-
         setSubmitting(true);
         await dispatch(closeOrReopenIssue(issue));
         setSubmitting(false);
@@ -61,12 +60,12 @@ const CloseOrReopenIssueModal = ({theme}: {theme: Theme}) => {
     const handleIssueCommentChange = (updatedComment: string) => setComment(updatedComment);
 
     const style = getStyle(theme);
-    const modalTitle = messageData.status + ' Issue';
-    const savingMessage = messageData.status === 'Close' ? 'Closing' : 'Reopening';
-    const status = messageData.status + ' Issue';
+    const modalTitle = messageData.status == 'open' ? 'Close Issue' : 'Open Issue';
+    const savingMessage = messageData.status === 'open' ? 'Closing' : 'Reopening';
+    const status = messageData.status == 'open' ? 'Close Issue' : 'Open Issue';
     const submitError = null;
 
-    const component = (messageData.status === 'Close') ? (
+    const component = (messageData.status === 'open') ? (
         <div>
             <Input
                 label='Leave a comment (optional)'

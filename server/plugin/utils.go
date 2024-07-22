@@ -7,6 +7,7 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -392,18 +393,101 @@ func (p *Plugin) updatePost(issue *UpdateIssueRequest, w http.ResponseWriter) {
 		return
 	}
 
+	attachment, err := getAttachmentsFromProps(post.Props)
+	if err != nil {
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("existing attachments format error: %v", err), StatusCode: http.StatusInternalServerError})
+		return
+	}
+
+	if len(issue.Assignees) > 0 {
+		assigneesField := findField(attachment[0].Fields, "Assignees")
+		if assigneesField != nil {
+			assigneesField.Value = strings.Join(issue.Assignees, ", ")
+		} else {
+			attachment[0].Fields = append(attachment[0].Fields, &model.SlackAttachmentField{
+				Title: "Assignees",
+				Value: strings.Join(issue.Assignees, ", "),
+				Short: true,
+			})
+		}
+	} else {
+		attachment[0].Fields = removeField(attachment[0].Fields, "Assignees")
+	}
+
+	if len(issue.Labels) > 0 {
+		labelsField := findField(attachment[0].Fields, "Labels")
+		if labelsField != nil {
+			labelsField.Value = strings.Join(issue.Labels, ", ")
+		} else {
+			attachment[0].Fields = append(attachment[0].Fields, &model.SlackAttachmentField{
+				Title: "Labels",
+				Value: strings.Join(issue.Labels, ", "),
+				Short: true,
+			})
+		}
+	} else {
+		attachment[0].Fields = removeField(attachment[0].Fields, "Labels")
+	}
+
+	if attachment[0].Title != issue.Title {
+		attachment[0].Title = issue.Title
+	}
+
+	if attachment[0].Text != issue.Body {
+		attachment[0].Text = issue.Body
+	}
+
+	post.Props[attachments] = attachment
 	post.Props[assigneesForProps] = issue.Assignees
 	post.Props[labelsForProps] = issue.Labels
 	post.Props[descriptionForProps] = issue.Body
 	post.Props[titleForProps] = issue.Title
+
 	if _, appErr = p.API.UpdatePost(post); appErr != nil {
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to update the post %s", issue.PostID), StatusCode: http.StatusInternalServerError})
 	}
 }
 
+func findField(fields []*model.SlackAttachmentField, title string) *model.SlackAttachmentField {
+	for _, field := range fields {
+		if field.Title == title {
+			return field
+		}
+	}
+	return nil
+}
+
+func removeField(fields []*model.SlackAttachmentField, title string) []*model.SlackAttachmentField {
+	for i, field := range fields {
+		if field.Title == title {
+			return append(fields[:i], fields[i+1:]...)
+		}
+	}
+	return fields
+}
+
+func getAttachmentsFromProps(props map[string]interface{}) ([]*model.SlackAttachment, error) {
+	attachments, ok := props["attachments"]
+	if !ok {
+		return nil, fmt.Errorf("no attachments found in props")
+	}
+
+	attachmentsData, err := json.Marshal(attachments)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal attachments: %v", err)
+	}
+
+	var slackAttachments []*model.SlackAttachment
+	err = json.Unmarshal(attachmentsData, &slackAttachments)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal attachments: %v", err)
+	}
+
+	return slackAttachments, nil
+}
+
 func (p *Plugin) CreateCommentToIssue(c *UserContext, w http.ResponseWriter, comment, owner, repo string, post *model.Post, issueNumber int) {
 	currentUsername := c.GHInfo.GitHubUsername
-	permalink := p.getPermaLink(post.Id)
 	issueComment := &github.IssueComment{
 		Body: &comment,
 	}
@@ -425,7 +509,7 @@ func (p *Plugin) CreateCommentToIssue(c *UserContext, w http.ResponseWriter, com
 		rootID = post.RootId
 	}
 
-	permalinkReplyMessage := fmt.Sprintf("Comment attached to GitHub issue [#%v](%v) from a [message](%v)", issueNumber, result.GetHTMLURL(), permalink)
+	permalinkReplyMessage := fmt.Sprintf("Comment attached to GitHub issue [#%v](%v)", issueNumber, result.GetHTMLURL())
 	reply := &model.Post{
 		Message:   permalinkReplyMessage,
 		ChannelId: post.ChannelId,
@@ -493,11 +577,35 @@ func (p *Plugin) CloseOrReopenIssue(c *UserContext, w http.ResponseWriter, statu
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to create the notification post %s", post.Id), StatusCode: http.StatusInternalServerError})
 		return
 	}
+
+	var actionButtonTitle string
 	if status == issueClose {
 		post.Props[issueStatus] = statusReopen
+		actionButtonTitle = statusReopen
 	} else {
 		post.Props[issueStatus] = statusClose
+		actionButtonTitle = statusClose
 	}
+
+	attachment, err := getAttachmentsFromProps(post.Props)
+	if err != nil {
+		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("existing attachments format error: %v", err), StatusCode: http.StatusInternalServerError})
+		return
+	}
+	actions := attachment[0].Actions
+	for _, action := range actions {
+		if action.Name == statusClose || action.Name == statusReopen {
+			action.Name = actionButtonTitle
+			if status == issueClose {
+				action.Integration.Context["status"] = "close"
+			} else {
+				action.Integration.Context["status"] = "open"
+			}
+		}
+	}
+	attachment[0].Actions = actions
+	post.Props[attachments] = attachment
+
 	if _, appErr := p.API.UpdatePost(post); appErr != nil {
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to update the post %s", post.Id), StatusCode: http.StatusInternalServerError})
 	}

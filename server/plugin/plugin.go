@@ -78,6 +78,7 @@ const (
 	labelsForProps      = "labels"
 	descriptionForProps = "description"
 	titleForProps       = "title"
+	attachments         = "attachments"
 	issueNumberForProps = "issue_number"
 	issueURLForProps    = "issue_url"
 	repoOwnerForProps   = "repo_owner"
