@@ -114,19 +114,16 @@ export function handleOpenEditIssueModal(store) {
             postId: msg.data.postId,
             status: msg.data.status,
             channel_id: msg.data.channel_id,
-        }
-
+        };
         store.dispatch(openCreateOrUpdateIssueModal(editIssueModalData));
     };
 }
 
 export function handleOpenCreateCommentOnIssueModal(store) {
     return (msg) => {
-        
         if (!msg.data) {
             return;
         }
-
         const commmentModalData = {
             repo_owner: msg.data.repo_owner,
             repo_name: msg.data.repo_name,
@@ -134,8 +131,7 @@ export function handleOpenCreateCommentOnIssueModal(store) {
             postId: msg.data.postId,
             status: msg.data.status,
             channel_id: msg.data.channel_id,
-        }
-
+        };
         store.dispatch(openCreateCommentOnIssueModal(commmentModalData));
     };
 }
@@ -152,7 +148,7 @@ export function handleOpenCloseOrReopenIssueModal(store) {
             postId: msg.data.postId,
             status: msg.data.status,
             channel_id: msg.data.channel_id,
-        }
+        };
         store.dispatch(openCloseOrReopenIssueModal(statusModalData));
     };
 }
