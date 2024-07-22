@@ -430,7 +430,7 @@ func (p *Plugin) updatePost(issue *UpdateIssueRequest, w http.ResponseWriter) {
 	}
 
 	if attachment[0].Title != issue.Title {
-		attachment[0].Title = issue.Title
+		attachment[0].Title = fmt.Sprintf("%s #%d", issue.Title, issue.IssueNumber)
 	}
 
 	if attachment[0].Text != issue.Body {

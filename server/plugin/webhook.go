@@ -590,7 +590,10 @@ func (p *Plugin) postIssueEvent(event *github.IssuesEvent) {
 			description = *issue.Body
 		}
 
-		post := p.makeBotPost(renderedMessage, "")
+		post := &model.Post{
+			UserId: p.BotUserID,
+			Type:   "custom_git_release",
+		}
 
 		pluginURL := *p.client.Configuration.GetConfig().ServiceSettings.SiteURL + "/" + "plugins" + "/" + Manifest.Id
 
@@ -616,20 +619,19 @@ func (p *Plugin) postIssueEvent(event *github.IssuesEvent) {
 			post.Props = model.StringInterface{
 				"attachments": []*model.SlackAttachment{
 					{
-						Title:     *issue.Title,
+						Pretext:   renderedMessage,
+						Title:     fmt.Sprintf("%s #%d", *issue.Title, *issue.Number),
 						TitleLink: *issue.HTMLURL,
-						Text:      fmt.Sprintf("Issue #%d: %s", *issue.Number, description),
+						Text:      description,
 						Actions: []*model.PostAction{
 							{
 								Name: "Comment",
 								Integration: &model.PostActionIntegration{
-									// Context: model.StringInterface{},
 									Context: map[string]interface{}{
 										"repo_owner":   repo.GetOwner().GetLogin(),
 										"repo_name":    repo.GetName(),
 										"issue_number": issue.GetNumber(),
 										"issue_id":     issue.GetID(),
-										"postId":       post.Id,
 										"status":       *issue.State,
 										"channel_id":   sub.ChannelID,
 									},
@@ -645,7 +647,6 @@ func (p *Plugin) postIssueEvent(event *github.IssuesEvent) {
 										"repo_name":    repo.GetName(),
 										"issue_number": issue.GetNumber(),
 										"issue_id":     issue.GetID(),
-										"postId":       post.Id,
 										"status":       *issue.State,
 										"channel_id":   sub.ChannelID,
 									},
@@ -660,7 +661,6 @@ func (p *Plugin) postIssueEvent(event *github.IssuesEvent) {
 										"repo_name":    repo.GetName(),
 										"issue_number": issue.GetNumber(),
 										"issue_id":     issue.GetID(),
-										"postId":       post.Id,
 										"status":       *issue.State,
 										"channel_id":   sub.ChannelID,
 									},
