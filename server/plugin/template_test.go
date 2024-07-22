@@ -115,39 +115,6 @@ var issue = github.Issue{
 	Body:      sToP(`<!-- Thank you for opening this issue-->git-get-head sounds like a great feature we should support`),
 }
 
-var issueWithMentions = github.Issue{
-	Number:    iToP(1),
-	HTMLURL:   sToP("https://github.com/mattermost/mattermost-plugin-github/issues/1"),
-	Title:     sToP("Implement git-get-head"),
-	CreatedAt: tToP(time.Date(2019, 04, 01, 02, 03, 04, 0, time.UTC)),
-	UpdatedAt: tToP(time.Date(2019, 05, 01, 02, 03, 04, 0, time.UTC)),
-	Body: sToP(`<!-- Thank you for opening this issue-->git-get-head sounds like a great feature we should support
-` + gitHubMentions),
-}
-
-var issueWithLabelAndAssignee = github.Issue{
-	Number:    iToP(1),
-	HTMLURL:   sToP("https://github.com/mattermost/mattermost-plugin-github/issues/1"),
-	Title:     sToP("Implement git-get-head"),
-	CreatedAt: tToP(time.Date(2019, 04, 01, 02, 03, 04, 0, time.UTC)),
-	UpdatedAt: tToP(time.Date(2019, 05, 01, 02, 03, 04, 0, time.UTC)),
-	Body:      sToP(`<!-- Thank you for opening this issue-->git-get-head sounds like a great feature we should support`),
-	Labels:    singleLabel,
-	Assignee:  &user,
-	Assignees: []*github.User{&user},
-}
-
-var issueWithMultipleLabelsAndAssignee = github.Issue{
-	Number:    iToP(1),
-	HTMLURL:   sToP("https://github.com/mattermost/mattermost-plugin-github/issues/1"),
-	Title:     sToP("Implement git-get-head"),
-	CreatedAt: tToP(time.Date(2019, 04, 01, 02, 03, 04, 0, time.UTC)),
-	UpdatedAt: tToP(time.Date(2019, 05, 01, 02, 03, 04, 0, time.UTC)),
-	Body:      sToP(`<!-- Thank you for opening this issue-->git-get-head sounds like a great feature we should support`),
-	Labels:    labels,
-	Assignees: []*github.User{&user, &user},
-}
-
 var user = github.User{
 	Login:   sToP("panda"),
 	HTMLURL: sToP("https://github.com/panda"),
