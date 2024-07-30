@@ -58,6 +58,17 @@ const (
 	ResponseTypeJSON ResponseType = "JSON_RESPONSE"
 	// ResponseTypePlain indicates that response type is text plain
 	ResponseTypePlain ResponseType = "TEXT_RESPONSE"
+	RepoName          string       = "repo_name"
+	RepoOwner         string       = "repo_owner"
+	IssueNumber       string       = "issue_number"
+	IssueID           string       = "issue_id"
+	Status            string       = "status"
+	ChannelID         string       = "channel_id"
+	PostID            string       = "postId"
+
+	CommentModalHeader string = "comment_modal"
+	StatusModalHeader  string = "status_modal"
+	EditModalHeader    string = "edit_modal"
 )
 
 func (p *Plugin) writeJSON(w http.ResponseWriter, v interface{}) {
@@ -124,9 +135,9 @@ func (p *Plugin) initializeAPI() {
 	apiRouter.HandleFunc("/issue", p.checkAuth(p.attachUserContext(p.getIssueByNumber), ResponseTypePlain)).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/pr", p.checkAuth(p.attachUserContext(p.getPrByNumber), ResponseTypePlain)).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/lhs-content", p.checkAuth(p.attachUserContext(p.getSidebarContent), ResponseTypePlain)).Methods(http.MethodGet)
-	apiRouter.HandleFunc("/open-comment-modal", p.handleOpenCommentModal).Methods(http.MethodPost)
-	apiRouter.HandleFunc("/open-edit-modal", p.checkAuth(p.attachUserContext(p.handleOpenEditModal), ResponseTypePlain)).Methods(http.MethodPost)
-	apiRouter.HandleFunc("/open-status-modal", p.checkAuth(p.attachUserContext(p.handleOpenStatusModal), ResponseTypePlain)).Methods(http.MethodPost)
+	apiRouter.HandleFunc("/open-comment-modal", p.checkAuth(p.attachUserContext(p.handleOpenIssueCommentModal), ResponseTypePlain)).Methods(http.MethodPost)
+	apiRouter.HandleFunc("/open-edit-modal", p.checkAuth(p.attachUserContext(p.handleOpenEditIssueModal), ResponseTypePlain)).Methods(http.MethodPost)
+	apiRouter.HandleFunc("/open-status-modal", p.checkAuth(p.attachUserContext(p.handleOpenIssueStatusModal), ResponseTypePlain)).Methods(http.MethodPost)
 
 	apiRouter.HandleFunc("/config", checkPluginRequest(p.getConfig)).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/token", checkPluginRequest(p.getToken)).Methods(http.MethodGet)
@@ -1622,31 +1633,25 @@ func (p *Plugin) getToken(w http.ResponseWriter, r *http.Request) {
 	p.writeJSON(w, info.Token)
 }
 
-func (p *Plugin) handleOpenEditModal(c *UserContext, w http.ResponseWriter, r *http.Request) {
+func (p *Plugin) handleOpenEditIssueModal(c *UserContext, w http.ResponseWriter, r *http.Request) {
 	response := &model.PostActionIntegrationResponse{}
 	decoder := json.NewDecoder(r.Body)
 	postActionIntegrationRequest := &model.PostActionIntegrationRequest{}
 	if err := decoder.Decode(&postActionIntegrationRequest); err != nil {
-		p.API.LogError("Error decoding PostActionIntegrationRequest params: ", err.Error())
+		p.API.LogError("Error decoding PostActionIntegrationRequest params", "Error", err.Error())
 		p.returnPostActionIntegrationResponse(w, response)
 		return
 	}
 
-	repoName := postActionIntegrationRequest.Context["repo_name"]
-	repoOwner := postActionIntegrationRequest.Context["repo_owner"]
-	issueNumber := postActionIntegrationRequest.Context["issue_number"]
-	status := postActionIntegrationRequest.Context["status"]
-	channelID := postActionIntegrationRequest.Context["channel_id"]
-
 	p.client.Frontend.PublishWebSocketEvent(
-		"edit_modal",
+		EditModalHeader,
 		map[string]interface{}{
-			"repo_name":    repoName,
-			"repo_owner":   repoOwner,
-			"issue_number": issueNumber,
-			"postId":       postActionIntegrationRequest.PostId,
-			"status":       status,
-			"channel_id":   channelID,
+			RepoName:    postActionIntegrationRequest.Context[RepoName],
+			RepoOwner:   postActionIntegrationRequest.Context[RepoOwner],
+			IssueNumber: postActionIntegrationRequest.Context[IssueNumber],
+			PostID:      postActionIntegrationRequest.PostId,
+			Status:      postActionIntegrationRequest.Context[Status],
+			ChannelID:   postActionIntegrationRequest.ChannelId,
 		},
 		&model.WebsocketBroadcast{UserId: postActionIntegrationRequest.UserId},
 	)
@@ -1658,35 +1663,29 @@ func (p *Plugin) returnPostActionIntegrationResponse(w http.ResponseWriter, res 
 	w.Header().Set("Content-Type", "application/json")
 
 	if err := json.NewEncoder(w).Encode(res); err != nil {
-		p.API.LogWarn("failed to write PostActionIntegrationResponse", "Error", err.Error())
+		p.API.LogWarn("Failed to write PostActionIntegrationResponse", "Error", err.Error())
 	}
 }
 
-func (p *Plugin) handleOpenStatusModal(c *UserContext, w http.ResponseWriter, r *http.Request) {
+func (p *Plugin) handleOpenIssueStatusModal(c *UserContext, w http.ResponseWriter, r *http.Request) {
 	response := &model.PostActionIntegrationResponse{}
 	decoder := json.NewDecoder(r.Body)
 	postActionIntegrationRequest := &model.PostActionIntegrationRequest{}
 	if err := decoder.Decode(&postActionIntegrationRequest); err != nil {
-		p.API.LogError("Error decoding PostActionIntegrationRequest params: ", err.Error())
+		p.API.LogError("Error decoding PostActionIntegrationRequest params", "Error", err.Error())
 		p.returnPostActionIntegrationResponse(w, response)
 		return
 	}
 
-	repoName := postActionIntegrationRequest.Context["repo_name"]
-	repoOwner := postActionIntegrationRequest.Context["repo_owner"]
-	issueNumber := postActionIntegrationRequest.Context["issue_number"]
-	status := postActionIntegrationRequest.Context["status"]
-	channelID := postActionIntegrationRequest.Context["channel_id"]
-
 	p.client.Frontend.PublishWebSocketEvent(
-		"status_modal",
+		StatusModalHeader,
 		map[string]interface{}{
-			"repo_name":    repoName,
-			"repo_owner":   repoOwner,
-			"issue_number": issueNumber,
-			"postId":       postActionIntegrationRequest.PostId,
-			"status":       status,
-			"channel_id":   channelID,
+			RepoName:    postActionIntegrationRequest.Context[RepoName],
+			RepoOwner:   postActionIntegrationRequest.Context[RepoOwner],
+			IssueNumber: postActionIntegrationRequest.Context[IssueNumber],
+			PostID:      postActionIntegrationRequest.PostId,
+			Status:      postActionIntegrationRequest.Context[Status],
+			ChannelID:   postActionIntegrationRequest.ChannelId,
 		},
 		&model.WebsocketBroadcast{UserId: postActionIntegrationRequest.UserId},
 	)
@@ -1694,32 +1693,25 @@ func (p *Plugin) handleOpenStatusModal(c *UserContext, w http.ResponseWriter, r 
 	p.returnPostActionIntegrationResponse(w, response)
 }
 
-func (p *Plugin) handleOpenCommentModal(w http.ResponseWriter, r *http.Request) {
+func (p *Plugin) handleOpenIssueCommentModal(c *UserContext, w http.ResponseWriter, r *http.Request) {
 	response := &model.PostActionIntegrationResponse{}
 	decoder := json.NewDecoder(r.Body)
 	postActionIntegrationRequest := &model.PostActionIntegrationRequest{}
-
 	if err := decoder.Decode(&postActionIntegrationRequest); err != nil {
-		p.API.LogError("Error decoding PostActionIntegrationRequest params: ", err.Error())
+		p.API.LogError("Error decoding PostActionIntegrationRequest params", "Error", err.Error())
 		p.returnPostActionIntegrationResponse(w, response)
 		return
 	}
 
-	repoName := postActionIntegrationRequest.Context["repo_name"]
-	repoOwner := postActionIntegrationRequest.Context["repo_owner"]
-	issueNumber := postActionIntegrationRequest.Context["issue_number"]
-	status := postActionIntegrationRequest.Context["status"]
-	channelID := postActionIntegrationRequest.Context["channel_id"]
-
 	p.client.Frontend.PublishWebSocketEvent(
-		"comment_modal",
+		CommentModalHeader,
 		map[string]interface{}{
-			"repo_name":    repoName,
-			"repo_owner":   repoOwner,
-			"issue_number": issueNumber,
-			"postId":       postActionIntegrationRequest.PostId,
-			"status":       status,
-			"channel_id":   channelID,
+			RepoName:    postActionIntegrationRequest.Context[RepoName],
+			RepoOwner:   postActionIntegrationRequest.Context[RepoOwner],
+			IssueNumber: postActionIntegrationRequest.Context[IssueNumber],
+			PostID:      postActionIntegrationRequest.PostId,
+			Status:      postActionIntegrationRequest.Context[Status],
+			ChannelID:   postActionIntegrationRequest.ChannelId,
 		},
 		&model.WebsocketBroadcast{UserId: postActionIntegrationRequest.UserId},
 	)

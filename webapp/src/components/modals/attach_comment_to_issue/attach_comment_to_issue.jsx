@@ -78,7 +78,7 @@ export default class AttachIssueModal extends PureComponent {
             repo,
             number,
             comment: this.state.comment,
-            post_id: this.props.messageData.postId,
+            post_id: postId,
             show_attached_message: true,
         };
 

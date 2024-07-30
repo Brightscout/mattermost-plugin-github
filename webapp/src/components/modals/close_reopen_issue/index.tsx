@@ -17,8 +17,7 @@ import Input from '../../input';
 
 const CloseOrReopenIssueModal = ({theme}: {theme: Theme}) => {
     const dispatch = useDispatch();
-    const closeOrReopenIssueModalData = useSelector(getCloseOrReopenIssueModalData);
-    const {messageData, visible} = closeOrReopenIssueModalData;
+    const {messageData, visible} = useSelector(getCloseOrReopenIssueModalData);
     const [statusReason, setStatusReason] = useState('completed');
     const [submitting, setSubmitting] = useState(false);
     const [comment, setComment] = useState('');
@@ -31,15 +30,14 @@ const CloseOrReopenIssueModal = ({theme}: {theme: Theme}) => {
             e.preventDefault();
         }
 
-        const currentStatus = messageData?.status === 'open' ? statusReason : 'reopened';
         const issue = {
             channel_id: messageData.channel_id,
             issue_comment: comment,
-            status_reason: currentStatus,
+            status_reason: messageData?.status === 'open' ? statusReason : 'reopened', // Sending the reason for the issue edit API call
             repo: messageData.repo_name,
             number: messageData.issue_number,
             owner: messageData.repo_owner,
-            status: messageData.status === 'open' ? 'Close' : 'Reopen',
+            status: messageData.status === 'open' ? 'Close' : 'Reopen',  // Sending the state of the issue which we want it to be after the edit API call
             postId: messageData.postId,
         };
         setSubmitting(true);
