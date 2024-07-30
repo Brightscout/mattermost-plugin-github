@@ -37,7 +37,7 @@ const CloseOrReopenIssueModal = ({theme}: {theme: Theme}) => {
             repo: messageData.repo_name,
             number: messageData.issue_number,
             owner: messageData.repo_owner,
-            status: messageData.status === 'open' ? 'Close' : 'Reopen',  // Sending the state of the issue which we want it to be after the edit API call
+            status: messageData.status === 'open' ? 'Close' : 'Reopen', // Sending the state of the issue which we want it to be after the edit API call
             postId: messageData.postId,
         };
         setSubmitting(true);

@@ -669,7 +669,7 @@ func (p *Plugin) postIssueEvent(event *github.IssuesEvent) {
 										RepoOwner:   repo.GetOwner().GetLogin(),
 										RepoName:    repo.GetName(),
 										IssueNumber: issue.GetNumber(),
-										IssueID:     issue.GetID(),	
+										IssueID:     issue.GetID(),
 										Status:      *issue.State,
 									},
 									URL: fmt.Sprintf("%s%s%s", pluginURL, BasePath, OpenStatusModalPath),
