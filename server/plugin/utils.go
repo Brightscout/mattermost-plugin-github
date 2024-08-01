@@ -393,51 +393,17 @@ func (p *Plugin) updatePost(issue *UpdateIssueRequest, w http.ResponseWriter) {
 		return
 	}
 
-	attachment, err := getAttachmentsFromProps(post.Props)
+	attachments, err := getAttachmentsFromProps(post.Props)
 	if err != nil {
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("existing attachments format error: %v", err), StatusCode: http.StatusInternalServerError})
 		return
 	}
 
-	if len(issue.Assignees) > 0 {
-		assigneesField := findField(attachment[0].Fields, "Assignees")
-		if assigneesField != nil {
-			assigneesField.Value = strings.Join(issue.Assignees, ", ")
-		} else {
-			attachment[0].Fields = append(attachment[0].Fields, &model.SlackAttachmentField{
-				Title: "Assignees",
-				Value: strings.Join(issue.Assignees, ", "),
-				Short: true,
-			})
-		}
-	} else {
-		attachment[0].Fields = removeField(attachment[0].Fields, "Assignees")
-	}
+	attachments[0].Fields = p.CreateFieldsForIssuePost(issue.Assignees, issue.Labels)
+	attachments[0].Title = fmt.Sprintf("%s #%d", issue.Title, issue.IssueNumber)
+	attachments[0].Text = issue.Body
 
-	if len(issue.Labels) > 0 {
-		labelsField := findField(attachment[0].Fields, "Labels")
-		if labelsField != nil {
-			labelsField.Value = strings.Join(issue.Labels, ", ")
-		} else {
-			attachment[0].Fields = append(attachment[0].Fields, &model.SlackAttachmentField{
-				Title: "Labels",
-				Value: strings.Join(issue.Labels, ", "),
-				Short: true,
-			})
-		}
-	} else {
-		attachment[0].Fields = removeField(attachment[0].Fields, "Labels")
-	}
-
-	if attachment[0].Title != issue.Title {
-		attachment[0].Title = fmt.Sprintf("%s #%d", issue.Title, issue.IssueNumber)
-	}
-
-	if attachment[0].Text != issue.Body {
-		attachment[0].Text = issue.Body
-	}
-
-	post.Props[attachments] = attachment
+	post.Props[attachmentsForProps] = attachments
 	post.Props[assigneesForProps] = issue.Assignees
 	post.Props[labelsForProps] = issue.Labels
 	post.Props[descriptionForProps] = issue.Body
@@ -446,24 +412,6 @@ func (p *Plugin) updatePost(issue *UpdateIssueRequest, w http.ResponseWriter) {
 	if _, appErr = p.API.UpdatePost(post); appErr != nil {
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to update the post %s", issue.PostID), StatusCode: http.StatusInternalServerError})
 	}
-}
-
-func findField(fields []*model.SlackAttachmentField, title string) *model.SlackAttachmentField {
-	for _, field := range fields {
-		if field.Title == title {
-			return field
-		}
-	}
-	return nil
-}
-
-func removeField(fields []*model.SlackAttachmentField, title string) []*model.SlackAttachmentField {
-	for i, field := range fields {
-		if field.Title == title {
-			return append(fields[:i], fields[i+1:]...)
-		}
-	}
-	return fields
 }
 
 func getAttachmentsFromProps(props map[string]interface{}) ([]*model.SlackAttachment, error) {
@@ -604,7 +552,7 @@ func (p *Plugin) CloseOrReopenIssue(c *UserContext, w http.ResponseWriter, statu
 		}
 	}
 	attachment[0].Actions = actions
-	post.Props[attachments] = attachment
+	post.Props[attachmentsForProps] = attachment
 
 	if _, appErr := p.API.UpdatePost(post); appErr != nil {
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to update the post %s", post.Id), StatusCode: http.StatusInternalServerError})
@@ -630,4 +578,25 @@ func lastN(s string, n int) string {
 	}
 
 	return string(out)
+}
+
+func (p *Plugin) CreateFieldsForIssuePost(assignees []string, labels []string) []*model.SlackAttachmentField {
+	fields := []*model.SlackAttachmentField{}
+	if len(assignees) > 0 {
+		fields = append(fields, &model.SlackAttachmentField{
+			Title: "Assignees",
+			Value: strings.Join(assignees, ", "),
+			Short: true,
+		})
+	}
+
+	if len(labels) > 0 {
+		fields = append(fields, &model.SlackAttachmentField{
+			Title: "Labels",
+			Value: strings.Join(labels, ", "),
+			Short: true,
+		})
+	}
+
+	return fields
 }

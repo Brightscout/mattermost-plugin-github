@@ -78,7 +78,7 @@ const (
 	labelsForProps      = "labels"
 	descriptionForProps = "description"
 	titleForProps       = "title"
-	attachments         = "attachments"
+	attachmentsForProps = "attachments"
 	issueNumberForProps = "issue_number"
 	issueURLForProps    = "issue_url"
 	repoOwnerForProps   = "repo_owner"
@@ -1094,4 +1094,8 @@ func (p *Plugin) getUsername(mmUserID string) (string, error) {
 	}
 
 	return "@" + info.GitHubUsername, nil
+}
+
+func (p *Plugin) GetPluginAPIPath() string {
+	return fmt.Sprintf("%s/plugins/github/api/v1", *p.client.Configuration.GetConfig().ServiceSettings.SiteURL)
 }

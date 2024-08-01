@@ -66,9 +66,13 @@ const (
 	ChannelID         string       = "channel_id"
 	PostID            string       = "postId"
 
-	CommentModalHeader string = "comment_modal"
-	StatusModalHeader  string = "status_modal"
-	EditModalHeader    string = "edit_modal"
+	WebsocketEventOpenCommentModal string = "open_comment_modal"
+	WebsocketEventOpenStatusModal  string = "open_status_modal"
+	WebsocketEventOpenEditModal    string = "open_edit_modal"
+
+	OpenCommentModalPath   string = "/open-comment-modal"
+	OpenEditIssueModalPath string = "/open-edit-modal"
+	OpenStatusModalPath    string = "/open-status-modal"
 )
 
 func (p *Plugin) writeJSON(w http.ResponseWriter, v interface{}) {
@@ -1644,7 +1648,7 @@ func (p *Plugin) handleOpenEditIssueModal(c *UserContext, w http.ResponseWriter,
 	}
 
 	p.client.Frontend.PublishWebSocketEvent(
-		EditModalHeader,
+		WebsocketEventOpenEditModal,
 		map[string]interface{}{
 			RepoName:    postActionIntegrationRequest.Context[RepoName],
 			RepoOwner:   postActionIntegrationRequest.Context[RepoOwner],
@@ -1678,7 +1682,7 @@ func (p *Plugin) handleOpenIssueStatusModal(c *UserContext, w http.ResponseWrite
 	}
 
 	p.client.Frontend.PublishWebSocketEvent(
-		StatusModalHeader,
+		WebsocketEventOpenStatusModal,
 		map[string]interface{}{
 			RepoName:    postActionIntegrationRequest.Context[RepoName],
 			RepoOwner:   postActionIntegrationRequest.Context[RepoOwner],
@@ -1704,7 +1708,7 @@ func (p *Plugin) handleOpenIssueCommentModal(c *UserContext, w http.ResponseWrit
 	}
 
 	p.client.Frontend.PublishWebSocketEvent(
-		CommentModalHeader,
+		WebsocketEventOpenCommentModal,
 		map[string]interface{}{
 			RepoName:    postActionIntegrationRequest.Context[RepoName],
 			RepoOwner:   postActionIntegrationRequest.Context[RepoOwner],

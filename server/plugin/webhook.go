@@ -33,17 +33,6 @@ type EventWithRenderConfig struct {
 	Config RenderConfig
 }
 
-const (
-	BasePath               string = "/api/v1"
-	OpenCommentModalPath   string = "/open-comment-modal"
-	OpenEditIssueModalPath string = "/open-edit-modal"
-	OpenStatusModalPath    string = "/open-status-modal"
-
-	CommentIssueModalTitle string = "Comment"
-	EditIssueModalTitle    string = "Edit"
-	CloseIssueModalTitle   string = "Close"
-)
-
 func verifyWebhookSignature(secret []byte, signature string, body []byte) (bool, error) {
 	const signaturePrefix = "sha1="
 	const signatureLength = 45
@@ -606,27 +595,7 @@ func (p *Plugin) postIssueEvent(event *github.IssuesEvent) {
 			Type:   "custom_git_release",
 		}
 
-		pluginURL := p.flowManager.pluginURL
-
 		if action == actionOpened {
-			fields := []*model.SlackAttachmentField{}
-
-			if len(assignees) > 0 {
-				fields = append(fields, &model.SlackAttachmentField{
-					Title: "Assignees",
-					Value: strings.Join(assignees, ", "),
-					Short: true,
-				})
-			}
-
-			if len(labels) > 0 {
-				fields = append(fields, &model.SlackAttachmentField{
-					Title: "Labels",
-					Value: strings.Join(labels, ", "),
-					Short: true,
-				})
-			}
-
 			post.Props = model.StringInterface{
 				"attachments": []*model.SlackAttachment{
 					{
@@ -636,7 +605,7 @@ func (p *Plugin) postIssueEvent(event *github.IssuesEvent) {
 						Text:      description,
 						Actions: []*model.PostAction{
 							{
-								Name: CommentIssueModalTitle,
+								Name: "Comment",
 								Integration: &model.PostActionIntegration{
 									Context: map[string]interface{}{
 										RepoOwner:   repo.GetOwner().GetLogin(),
@@ -645,12 +614,12 @@ func (p *Plugin) postIssueEvent(event *github.IssuesEvent) {
 										IssueID:     issue.GetID(),
 										Status:      *issue.State,
 									},
-									URL: fmt.Sprintf("%s%s%s", pluginURL, BasePath, OpenCommentModalPath),
+									URL: fmt.Sprintf("%s%s", p.GetPluginAPIPath(), OpenCommentModalPath),
 								},
 								Style: "primary",
 							},
 							{
-								Name: EditIssueModalTitle,
+								Name: "Edit",
 								Integration: &model.PostActionIntegration{
 									Context: map[string]interface{}{
 										RepoOwner:   repo.GetOwner().GetLogin(),
@@ -659,11 +628,11 @@ func (p *Plugin) postIssueEvent(event *github.IssuesEvent) {
 										IssueID:     issue.GetID(),
 										Status:      *issue.State,
 									},
-									URL: fmt.Sprintf("%s%s%s", pluginURL, BasePath, OpenEditIssueModalPath),
+									URL: fmt.Sprintf("%s%s", p.GetPluginAPIPath(), OpenEditIssueModalPath),
 								},
 							},
 							{
-								Name: CloseIssueModalTitle,
+								Name: "Close",
 								Integration: &model.PostActionIntegration{
 									Context: map[string]interface{}{
 										RepoOwner:   repo.GetOwner().GetLogin(),
@@ -672,11 +641,11 @@ func (p *Plugin) postIssueEvent(event *github.IssuesEvent) {
 										IssueID:     issue.GetID(),
 										Status:      *issue.State,
 									},
-									URL: fmt.Sprintf("%s%s%s", pluginURL, BasePath, OpenStatusModalPath),
+									URL: fmt.Sprintf("%s%s", p.GetPluginAPIPath(), OpenStatusModalPath),
 								},
 							},
 						},
-						Fields: fields,
+						Fields: p.CreateFieldsForIssuePost(assignees, labels),
 					},
 				},
 			}
