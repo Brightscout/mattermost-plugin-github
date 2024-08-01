@@ -1097,5 +1097,5 @@ func (p *Plugin) getUsername(mmUserID string) (string, error) {
 }
 
 func (p *Plugin) GetPluginAPIPath() string {
-	return fmt.Sprintf("%s/plugins/github/api/v1", *p.client.Configuration.GetConfig().ServiceSettings.SiteURL)
+	return fmt.Sprintf("%s/plugins/%s/api/v1", *p.client.Configuration.GetConfig().ServiceSettings.SiteURL, Manifest.Id)
 }

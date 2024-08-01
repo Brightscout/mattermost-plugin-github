@@ -395,6 +395,7 @@ func (p *Plugin) updatePost(issue *UpdateIssueRequest, w http.ResponseWriter) {
 
 	attachments, err := getAttachmentsFromProps(post.Props)
 	if err != nil {
+		p.client.Log.Warn("Error occurred while getting attachments from props. PostID: %v. Error: %v", post.Id, err)
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("existing attachments format error: %v", err), StatusCode: http.StatusInternalServerError})
 		return
 	}
@@ -533,6 +534,7 @@ func (p *Plugin) CloseOrReopenIssue(c *UserContext, w http.ResponseWriter, statu
 
 	attachment, err := getAttachmentsFromProps(post.Props)
 	if err != nil {
+		c.Log.WithError(err).Warnf("Error occurred while getting attachments from props. PostID: %v.", post.Id)
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("existing attachments format error: %v", err), StatusCode: http.StatusInternalServerError})
 		return
 	}

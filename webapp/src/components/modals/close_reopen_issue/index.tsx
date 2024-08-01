@@ -58,9 +58,10 @@ const CloseOrReopenIssueModal = ({theme}: {theme: Theme}) => {
     const handleIssueCommentChange = (updatedComment: string) => setComment(updatedComment);
 
     const style = getStyle(theme);
-    const modalTitle = messageData.status === 'open' ? 'Close Issue' : 'Open Issue';
+    const issueAction = messageData.status === 'open' ? 'Close Issue' : 'Open Issue';
+    const modalTitle = issueAction;
+    const status = issueAction;
     const savingMessage = messageData.status === 'open' ? 'Closing' : 'Reopening';
-    const status = messageData.status === 'open' ? 'Close Issue' : 'Open Issue';
     const submitError = null;
 
     const component = (messageData.status === 'open') ? (

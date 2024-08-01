@@ -71,9 +71,9 @@ const (
 	WebsocketEventOpenStatusModal  string = "open_status_modal"
 	WebsocketEventOpenEditModal    string = "open_edit_modal"
 
-	OpenCommentModalPath   string = "/open-comment-modal"
-	OpenEditIssueModalPath string = "/open-edit-modal"
-	OpenStatusModalPath    string = "/open-status-modal"
+	OpenIssueCommentModalPath string = "/open-comment-modal"
+	OpenIssueEditModalPath    string = "/open-edit-modal"
+	OpenIssueStatusModalPath  string = "/open-status-modal"
 )
 
 func (p *Plugin) writeJSON(w http.ResponseWriter, v interface{}) {
@@ -140,9 +140,9 @@ func (p *Plugin) initializeAPI() {
 	apiRouter.HandleFunc("/issue", p.checkAuth(p.attachUserContext(p.getIssueByNumber), ResponseTypePlain)).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/pr", p.checkAuth(p.attachUserContext(p.getPrByNumber), ResponseTypePlain)).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/lhs-content", p.checkAuth(p.attachUserContext(p.getSidebarContent), ResponseTypePlain)).Methods(http.MethodGet)
-	apiRouter.HandleFunc("/open-comment-modal", p.checkAuth(p.attachUserContext(p.handleOpenIssueCommentModal), ResponseTypePlain)).Methods(http.MethodPost)
-	apiRouter.HandleFunc("/open-edit-modal", p.checkAuth(p.attachUserContext(p.handleOpenEditIssueModal), ResponseTypePlain)).Methods(http.MethodPost)
-	apiRouter.HandleFunc("/open-status-modal", p.checkAuth(p.attachUserContext(p.handleOpenIssueStatusModal), ResponseTypePlain)).Methods(http.MethodPost)
+	apiRouter.HandleFunc(OpenIssueCommentModalPath, p.checkAuth(p.attachUserContext(p.handleOpenIssueCommentModal), ResponseTypePlain)).Methods(http.MethodPost)
+	apiRouter.HandleFunc(OpenIssueEditModalPath, p.checkAuth(p.attachUserContext(p.handleOpenEditIssueModal), ResponseTypePlain)).Methods(http.MethodPost)
+	apiRouter.HandleFunc(OpenIssueStatusModalPath, p.checkAuth(p.attachUserContext(p.handleOpenIssueStatusModal), ResponseTypePlain)).Methods(http.MethodPost)
 
 	apiRouter.HandleFunc("/config", checkPluginRequest(p.getConfig)).Methods(http.MethodGet)
 	apiRouter.HandleFunc("/token", checkPluginRequest(p.getToken)).Methods(http.MethodGet)
