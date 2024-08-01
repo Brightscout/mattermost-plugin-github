@@ -58,13 +58,14 @@ const (
 	ResponseTypeJSON ResponseType = "JSON_RESPONSE"
 	// ResponseTypePlain indicates that response type is text plain
 	ResponseTypePlain ResponseType = "TEXT_RESPONSE"
-	RepoName          string       = "repo_name"
-	RepoOwner         string       = "repo_owner"
-	IssueNumber       string       = "issue_number"
-	IssueID           string       = "issue_id"
-	Status            string       = "status"
-	ChannelID         string       = "channel_id"
-	PostID            string       = "postId"
+
+	KeyRepoName    string = "repo_name"
+	KeyRepoOwner   string = "repo_owner"
+	KeyIssueNumber string = "issue_number"
+	KeyIssueID     string = "issue_id"
+	KeyStatus      string = "status"
+	KeyChannelID   string = "channel_id"
+	KeyPostID      string = "postId"
 
 	WebsocketEventOpenCommentModal string = "open_comment_modal"
 	WebsocketEventOpenStatusModal  string = "open_status_modal"
@@ -1650,12 +1651,12 @@ func (p *Plugin) handleOpenEditIssueModal(c *UserContext, w http.ResponseWriter,
 	p.client.Frontend.PublishWebSocketEvent(
 		WebsocketEventOpenEditModal,
 		map[string]interface{}{
-			RepoName:    postActionIntegrationRequest.Context[RepoName],
-			RepoOwner:   postActionIntegrationRequest.Context[RepoOwner],
-			IssueNumber: postActionIntegrationRequest.Context[IssueNumber],
-			PostID:      postActionIntegrationRequest.PostId,
-			Status:      postActionIntegrationRequest.Context[Status],
-			ChannelID:   postActionIntegrationRequest.ChannelId,
+			KeyRepoName:    postActionIntegrationRequest.Context[KeyRepoName],
+			KeyRepoOwner:   postActionIntegrationRequest.Context[KeyRepoOwner],
+			KeyIssueNumber: postActionIntegrationRequest.Context[KeyIssueNumber],
+			KeyPostID:      postActionIntegrationRequest.PostId,
+			KeyStatus:      postActionIntegrationRequest.Context[KeyStatus],
+			KeyChannelID:   postActionIntegrationRequest.ChannelId,
 		},
 		&model.WebsocketBroadcast{UserId: postActionIntegrationRequest.UserId},
 	)
@@ -1684,12 +1685,12 @@ func (p *Plugin) handleOpenIssueStatusModal(c *UserContext, w http.ResponseWrite
 	p.client.Frontend.PublishWebSocketEvent(
 		WebsocketEventOpenStatusModal,
 		map[string]interface{}{
-			RepoName:    postActionIntegrationRequest.Context[RepoName],
-			RepoOwner:   postActionIntegrationRequest.Context[RepoOwner],
-			IssueNumber: postActionIntegrationRequest.Context[IssueNumber],
-			PostID:      postActionIntegrationRequest.PostId,
-			Status:      postActionIntegrationRequest.Context[Status],
-			ChannelID:   postActionIntegrationRequest.ChannelId,
+			KeyRepoName:    postActionIntegrationRequest.Context[KeyRepoName],
+			KeyRepoOwner:   postActionIntegrationRequest.Context[KeyRepoOwner],
+			KeyIssueNumber: postActionIntegrationRequest.Context[KeyIssueNumber],
+			KeyPostID:      postActionIntegrationRequest.PostId,
+			KeyStatus:      postActionIntegrationRequest.Context[KeyStatus],
+			KeyChannelID:   postActionIntegrationRequest.ChannelId,
 		},
 		&model.WebsocketBroadcast{UserId: postActionIntegrationRequest.UserId},
 	)
@@ -1710,12 +1711,12 @@ func (p *Plugin) handleOpenIssueCommentModal(c *UserContext, w http.ResponseWrit
 	p.client.Frontend.PublishWebSocketEvent(
 		WebsocketEventOpenCommentModal,
 		map[string]interface{}{
-			RepoName:    postActionIntegrationRequest.Context[RepoName],
-			RepoOwner:   postActionIntegrationRequest.Context[RepoOwner],
-			IssueNumber: postActionIntegrationRequest.Context[IssueNumber],
-			PostID:      postActionIntegrationRequest.PostId,
-			Status:      postActionIntegrationRequest.Context[Status],
-			ChannelID:   postActionIntegrationRequest.ChannelId,
+			KeyRepoName:    postActionIntegrationRequest.Context[KeyRepoName],
+			KeyRepoOwner:   postActionIntegrationRequest.Context[KeyRepoOwner],
+			KeyIssueNumber: postActionIntegrationRequest.Context[KeyIssueNumber],
+			KeyPostID:      postActionIntegrationRequest.PostId,
+			KeyStatus:      postActionIntegrationRequest.Context[KeyStatus],
+			KeyChannelID:   postActionIntegrationRequest.ChannelId,
 		},
 		&model.WebsocketBroadcast{UserId: postActionIntegrationRequest.UserId},
 	)

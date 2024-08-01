@@ -404,10 +404,6 @@ func (p *Plugin) updatePost(issue *UpdateIssueRequest, w http.ResponseWriter) {
 	attachments[0].Text = issue.Body
 
 	post.Props[attachmentsForProps] = attachments
-	post.Props[assigneesForProps] = issue.Assignees
-	post.Props[labelsForProps] = issue.Labels
-	post.Props[descriptionForProps] = issue.Body
-	post.Props[titleForProps] = issue.Title
 
 	if _, appErr = p.API.UpdatePost(post); appErr != nil {
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("failed to update the post %s", issue.PostID), StatusCode: http.StatusInternalServerError})
