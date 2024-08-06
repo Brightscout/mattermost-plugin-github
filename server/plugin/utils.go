@@ -534,7 +534,7 @@ func (p *Plugin) CloseOrReopenIssue(c *UserContext, w http.ResponseWriter, statu
 
 	attachment, err := getAttachmentsFromProps(post.Props)
 	if err != nil {
-		c.Log.WithError(err).Warnf("Error occurred while getting attachments from props. PostID: %v.", post.Id)
+		p.client.Log.Error("Error occurred while getting attachments from props", "PostID", post.Id, "Error", err.Error())
 		p.writeAPIError(w, &APIErrorResponse{ID: "", Message: fmt.Sprintf("existing attachments format error: %v", err), StatusCode: http.StatusInternalServerError})
 		return
 	}
