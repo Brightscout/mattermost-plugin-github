@@ -53,6 +53,7 @@ type RenderConfig struct {
 type EventWithRenderConfig struct {
 	Event  interface{}
 	Config RenderConfig
+	Label  string
 }
 
 func verifyWebhookSignature(secret []byte, signature string, body []byte) (bool, error) {
@@ -100,6 +101,7 @@ func GetEventWithRenderConfig(event interface{}, sub *Subscription) *EventWithRe
 		Config: RenderConfig{
 			Style: style,
 		},
+		Label: sub.Label(),
 	}
 }
 
@@ -606,7 +608,7 @@ func (p *Plugin) postIssueEvent(event *github.IssuesEvent) {
 			continue
 		}
 
-		renderedMessage, err := renderTemplate(issueTemplate, GetEventWithRenderConfig(event, sub))
+		renderedMessage, err := renderTemplate(issueTemplate, GetEventWithRenderConfig(event, sub)) // here
 		if err != nil {
 			p.client.Log.Warn("Failed to render template", "error", err.Error())
 			return
