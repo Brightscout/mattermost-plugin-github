@@ -92,8 +92,10 @@ func signBody(secret, body []byte) ([]byte, error) {
 // which also contains per-subscription configuration options.
 func GetEventWithRenderConfig(event interface{}, sub *Subscription) *EventWithRenderConfig {
 	style := ""
+	subscriptionLabel := ""
 	if sub != nil {
 		style = sub.RenderStyle()
+		subscriptionLabel = sub.Label()
 	}
 
 	return &EventWithRenderConfig{
@@ -101,7 +103,7 @@ func GetEventWithRenderConfig(event interface{}, sub *Subscription) *EventWithRe
 		Config: RenderConfig{
 			Style: style,
 		},
-		Label: sub.Label(),
+		Label: subscriptionLabel,
 	}
 }
 
@@ -608,7 +610,7 @@ func (p *Plugin) postIssueEvent(event *github.IssuesEvent) {
 			continue
 		}
 
-		renderedMessage, err := renderTemplate(issueTemplate, GetEventWithRenderConfig(event, sub)) // here
+		renderedMessage, err := renderTemplate(issueTemplate, GetEventWithRenderConfig(event, sub))
 		if err != nil {
 			p.client.Log.Warn("Failed to render template", "error", err.Error())
 			return

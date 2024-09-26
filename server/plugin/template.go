@@ -196,8 +196,7 @@ Labels: {{range $i, $el := .Labels -}}` + "{{- if $i}}, {{end}}[`{{ $el.Name }}`
 {{- if .Label }}
 {{- if ne .Label "" }} with the label ` + "`{{.Label}}`" + `{{- end }}
 {{- end -}}
-`))
-
+`)) //
 
 	template.Must(masterTemplate.New("assignee").Funcs(funcMap).Parse(`
 {{- if .Assignees }}
